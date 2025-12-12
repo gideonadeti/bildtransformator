@@ -3,6 +3,7 @@ import type { AxiosError } from "axios";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
+import getSocketInstance from "../libs/socket-instance";
 import type { Image, TransformedImage } from "../types/general";
 import {
   fetchImages,
@@ -11,6 +12,7 @@ import {
 } from "../utils/general-query-functions";
 
 const useImages = () => {
+  const socket = getSocketInstance();
   const queryClient = useQueryClient();
   const imagesQuery = useQuery<Image[], AxiosError<{ message: string }>>({
     queryKey: ["images"],
@@ -45,6 +47,31 @@ const useImages = () => {
     transformedImagesQuery.error?.response?.data,
     transformedImagesQuery.isError,
   ]);
+
+  useEffect(() => {
+    if (socket) {
+      socket.on(
+        "image-transformation-completed",
+        (transformedImage: TransformedImage) => {
+          queryClient.setQueryData(
+            ["transformed-images"],
+            (oldTransformedImages: TransformedImage[]) => [
+              transformedImage,
+              ...oldTransformedImages,
+            ]
+          );
+
+          toast.success("Image transformation completed", {
+            id: "image-transformation-completed",
+          });
+        }
+      );
+
+      socket.on("image-transformation-failed", (error: { message: string }) => {
+        toast.error(error.message, { id: "image-transformation-failed" });
+      });
+    }
+  }, [socket, queryClient.setQueryData]);
 
   const uploadImageMutation = useMutation<
     Image,
