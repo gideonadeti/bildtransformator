@@ -9,9 +9,7 @@ const getSocketInstance = () => {
 
   // Return existing instance if it's connected and token matches
   if (socketInstance?.connected) {
-    const currentToken = (
-      socketInstance.io.opts.extraHeaders?.Authorization as string
-    )?.replace("Bearer ", "");
+    const currentToken = (socketInstance.auth as { token?: string })?.token;
 
     if (accessToken === currentToken) {
       return socketInstance;
@@ -22,16 +20,18 @@ const getSocketInstance = () => {
   if (socketInstance) {
     socketInstance.disconnect();
     socketInstance.removeAllListeners();
+
+    socketInstance = null;
   }
 
-  // Create new instance with current token
+  // Create new instance with current token in auth field
   socketInstance = io(
     process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:3000",
     {
       transports: ["websocket"],
-      extraHeaders: accessToken
+      auth: accessToken
         ? {
-            Authorization: `Bearer ${accessToken}`,
+            token: accessToken,
           }
         : {},
       autoConnect: !!accessToken,
