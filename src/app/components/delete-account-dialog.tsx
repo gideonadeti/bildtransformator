@@ -35,6 +35,7 @@ const DeleteAccountDialog = ({
           normalText="Delete Account"
           pendingText="Deleting Account..."
           isPending={deleteAccountMutation.isPending}
+          variant={{ variant: "destructive" }}
           handleCancel={() => onOpenChange(false)}
           handleSubmit={() => deleteAccountMutation.mutate({ onOpenChange })}
         />
