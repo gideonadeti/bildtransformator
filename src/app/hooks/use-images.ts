@@ -3,14 +3,26 @@ import type { AxiosError } from "axios";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
-import type { Image } from "../types/general";
-import { fetchImages, uploadImage } from "../utils/general-query-functions";
+import type { Image, TransformedImage } from "../types/general";
+import {
+  fetchImages,
+  fetchTransformedImages,
+  uploadImage,
+} from "../utils/general-query-functions";
 
 const useImages = () => {
   const queryClient = useQueryClient();
   const imagesQuery = useQuery<Image[], AxiosError<{ message: string }>>({
     queryKey: ["images"],
     queryFn: async () => await fetchImages(),
+  });
+
+  const transformedImagesQuery = useQuery<
+    TransformedImage[],
+    AxiosError<{ message: string }>
+  >({
+    queryKey: ["transformed-images"],
+    queryFn: async () => await fetchTransformedImages(),
   });
 
   useEffect(() => {
@@ -21,6 +33,18 @@ const useImages = () => {
       toast.error(message, { id: "fetch-images-error" });
     }
   }, [imagesQuery.error?.response?.data, imagesQuery.isError]);
+
+  useEffect(() => {
+    if (transformedImagesQuery.isError) {
+      const message =
+        transformedImagesQuery.error?.response?.data?.message ||
+        "Failed to fetch transformed images";
+      toast.error(message, { id: "fetch-transformed-images-error" });
+    }
+  }, [
+    transformedImagesQuery.error?.response?.data,
+    transformedImagesQuery.isError,
+  ]);
 
   const uploadImageMutation = useMutation<
     Image,
@@ -52,6 +76,7 @@ const useImages = () => {
 
   return {
     imagesQuery,
+    transformedImagesQuery,
     uploadImageMutation,
   };
 };

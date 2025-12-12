@@ -26,3 +26,15 @@ export const fetchImages = async () => {
     throw error;
   }
 };
+
+export const fetchTransformedImages = async () => {
+  try {
+    const response = await axios.get("/transformed-images");
+
+    return response.data;
+  } catch (error) {
+    console.error("Error from `fetchTransformedImages`:", error);
+
+    throw error;
+  }
+};
