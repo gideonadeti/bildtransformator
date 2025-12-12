@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import "./globals.css";
+import AuthProvider from "./components/auth-provider";
 import QcProvider from "./components/qc-provider";
 
 const geistSans = Geist({
@@ -26,7 +27,9 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <QcProvider>{children}</QcProvider>
+        <QcProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </QcProvider>
       </body>
     </html>
   );
