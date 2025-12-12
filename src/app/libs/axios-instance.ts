@@ -6,7 +6,8 @@ import { clearRefreshTokenCookie } from "../utils/cookie-utils";
 
 const axiosInstance = axios.create({
   baseURL:
-    process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:3000/api/v1",
+    (process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:3000") +
+    "/api/v1",
   withCredentials: true,
 });
 
