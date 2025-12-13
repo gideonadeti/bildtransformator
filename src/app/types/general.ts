@@ -13,6 +13,7 @@ export interface Image {
   originalName: string;
   size: number;
   secureUrl: string;
+  format: string;
   createdAt: string;
   updatedAt: string;
 }
