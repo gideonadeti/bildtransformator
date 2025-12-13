@@ -16,7 +16,11 @@ import {
   uploadImage,
 } from "../utils/general-query-functions";
 
-const useImages = () => {
+interface UseImagesOptions {
+  onTransformationComplete?: (transformedImage: TransformedImage) => void;
+}
+
+const useImages = (options?: UseImagesOptions) => {
   const socket = getSocketInstance();
   const queryClient = useQueryClient();
   const imagesQuery = useQuery<Image[], AxiosError<{ message: string }>>({
@@ -68,6 +72,12 @@ const useImages = () => {
 
           toast.success("Image transformation completed", {
             id: "image-transformation-completed",
+            action: {
+              label: "View",
+              onClick: () => {
+                options?.onTransformationComplete?.(transformedImage);
+              },
+            },
           });
         }
       );
@@ -76,7 +86,7 @@ const useImages = () => {
         toast.error(error.message, { id: "image-transformation-failed" });
       });
     }
-  }, [socket, queryClient.setQueryData]);
+  }, [socket, queryClient.setQueryData, options?.onTransformationComplete]);
 
   const uploadImageMutation = useMutation<
     Image,
