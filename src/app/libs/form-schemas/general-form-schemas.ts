@@ -54,7 +54,7 @@ export const transformImageFormSchema = z
   .object({
     resize: resizeOptionsSchema,
     crop: cropOptionsSchema,
-    rotate: z.coerce.number().int().min(-360).max(360).optional(),
+    rotate: z.coerce.number<number>().int().min(-360).max(360).optional(),
     grayscale: z.boolean().optional(),
     tint: z.string().optional(),
     order: z.array(transformationTypeEnum).min(1),
