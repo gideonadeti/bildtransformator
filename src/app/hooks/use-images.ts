@@ -4,10 +4,15 @@ import { useEffect } from "react";
 import { toast } from "sonner";
 
 import getSocketInstance from "../libs/socket-instance";
-import type { Image, TransformedImage } from "../types/general";
+import type {
+  Image,
+  TransformedImage,
+  TransformImageFormValues,
+} from "../types/general";
 import {
   fetchImages,
   fetchTransformedImages,
+  transformImage,
   uploadImage,
 } from "../utils/general-query-functions";
 
@@ -84,8 +89,6 @@ const useImages = () => {
     onError: (error) => {
       const message = error.response?.data?.message || "Failed to upload image";
 
-      console.error(`Error from 'uploadImageMutation':`, JSON.stringify(error));
-
       toast.error(message, { id: "upload-image-error" });
     },
     onSuccess: (newImage, { onOpenChange }) => {
@@ -101,10 +104,38 @@ const useImages = () => {
     },
   });
 
+  const transformImageMutation = useMutation<
+    { jobId: string },
+    AxiosError<{ message: string }>,
+    {
+      id: string;
+      formValues: TransformImageFormValues;
+      onOpenChange: (open: boolean) => void;
+    }
+  >({
+    mutationFn: async ({ id, formValues }) => {
+      return transformImage(id, formValues);
+    },
+    onError: (error) => {
+      const message =
+        error.response?.data?.message || "Failed to transform image";
+
+      toast.error(message, { id: "transform-image-error" });
+    },
+    onSuccess: (_, { onOpenChange }) => {
+      onOpenChange(false);
+
+      toast.success("Image transformation started", {
+        id: "transform-image-success",
+      });
+    },
+  });
+
   return {
     imagesQuery,
     transformedImagesQuery,
     uploadImageMutation,
+    transformImageMutation,
   };
 };
 

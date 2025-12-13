@@ -1,4 +1,5 @@
 import axios from "../libs/axios-instance";
+import type { TransformImageFormValues } from "../types/general";
 
 export const uploadImage = async (image: File) => {
   try {
@@ -34,6 +35,21 @@ export const fetchTransformedImages = async () => {
     return response.data;
   } catch (error) {
     console.error("Error from `fetchTransformedImages`:", error);
+
+    throw error;
+  }
+};
+
+export const transformImage = async (
+  id: string,
+  formValues: TransformImageFormValues
+) => {
+  try {
+    const response = await axios.post(`/images/${id}/transform`, formValues);
+
+    return response.data;
+  } catch (error) {
+    console.error("Error from `transformImage`:", error);
 
     throw error;
   }
