@@ -3,12 +3,8 @@
 import Image from "next/image";
 
 import type { TransformedImage } from "@/app/types/general";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import CustomDialogContent from "../custom-dialog-content";
 
 interface ViewImageDialogProps {
   open: boolean;
@@ -25,7 +21,7 @@ const ViewImageDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl">
+      <CustomDialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle>Transformed Image</DialogTitle>
         </DialogHeader>
@@ -39,10 +35,9 @@ const ViewImageDialog = ({
             />
           </div>
         </div>
-      </DialogContent>
+      </CustomDialogContent>
     </Dialog>
   );
 };
 
 export default ViewImageDialog;
-

@@ -12,7 +12,6 @@ import type { UploadImageFormValues } from "@/app/types/general";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -24,6 +23,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
+import CustomDialogContent from "../custom-dialog-content";
 import CustomDialogFooter from "../custom-dialog-footer";
 
 interface UploadImageDialogProps {
@@ -111,11 +111,7 @@ const UploadImageDialog = ({ open, onOpenChange }: UploadImageDialogProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        showCloseButton={false}
-        onInteractOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
-      >
+      <CustomDialogContent>
         <DialogHeader>
           <DialogTitle>Upload Image</DialogTitle>
         </DialogHeader>
@@ -190,7 +186,7 @@ const UploadImageDialog = ({ open, onOpenChange }: UploadImageDialogProps) => {
           handleCancel={() => onOpenChange(false)}
           handleSubmit={form.handleSubmit(onSubmit)}
         />
-      </DialogContent>
+      </CustomDialogContent>
     </Dialog>
   );
 };

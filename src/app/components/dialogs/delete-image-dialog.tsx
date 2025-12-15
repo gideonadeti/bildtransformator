@@ -3,11 +3,11 @@
 import type { Image as ImageType } from "@/app/types/general";
 import {
   Dialog,
-  DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import CustomDialogContent from "../custom-dialog-content";
 import CustomDialogFooter from "../custom-dialog-footer";
 
 interface DeleteImageDialogProps {
@@ -35,11 +35,7 @@ const DeleteImageDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        showCloseButton={false}
-        onInteractOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
-      >
+      <CustomDialogContent>
         <DialogHeader>
           <DialogTitle>Delete Image</DialogTitle>
           <DialogDescription>
@@ -58,7 +54,7 @@ const DeleteImageDialog = ({
           handleCancel={handleCancel}
           handleSubmit={handleConfirm}
         />
-      </DialogContent>
+      </CustomDialogContent>
     </Dialog>
   );
 };

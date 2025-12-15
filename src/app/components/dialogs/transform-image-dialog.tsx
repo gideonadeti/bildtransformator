@@ -21,7 +21,6 @@ import {
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -34,6 +33,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import CustomDialogContent from "../custom-dialog-content";
 import CustomDialogFooter from "../custom-dialog-footer";
 
 interface TransformImageDialogProps {
@@ -215,7 +215,7 @@ const TransformImageDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+      <CustomDialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>Transform Image</DialogTitle>
         </DialogHeader>
@@ -609,7 +609,7 @@ const TransformImageDialog = ({
             handleSubmit={form.handleSubmit(onSubmit)}
           />
         </div>
-      </DialogContent>
+      </CustomDialogContent>
     </Dialog>
   );
 };
