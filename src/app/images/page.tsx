@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import DeleteImageDialog from "../components/dialogs/delete-image-dialog";
 import TransformImageDialog from "../components/dialogs/transform-image-dialog";
 import UploadImageDialog from "../components/dialogs/upload-image-dialog";
 import ViewImageDialog from "../components/dialogs/view-image-dialog";
@@ -34,6 +35,8 @@ const Page = () => {
   const [isUploadImageDialogOpen, setIsUploadImageDialogOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<ImageType | null>(null);
   const [isTransformDialogOpen, setIsTransformDialogOpen] = useState(false);
+  const [imageToDelete, setImageToDelete] = useState<ImageType | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const { filters, nameInput, setNameInput, replaceFiltersInUrl } =
     useImagesUrlFilters();
@@ -119,6 +122,16 @@ const Page = () => {
   const handleClearFilters = () => {
     replaceFiltersInUrl(defaultImagesFilters);
     reset();
+  };
+
+  const handleDeleteClick = (image: ImageType) => {
+    setImageToDelete(image);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    // Placeholder handler - will be implemented later
+    console.log("Delete image:", imageToDelete?.id);
   };
 
   if (imagesQuery.isPending) {
@@ -227,6 +240,7 @@ const Page = () => {
                       setSelectedImage(image);
                       setIsTransformDialogOpen(true);
                     }}
+                    onDeleteClick={() => handleDeleteClick(image)}
                   />
                 ))}
               </div>
@@ -269,6 +283,17 @@ const Page = () => {
           }
         }}
         transformedImage={selectedTransformedImage}
+      />
+      <DeleteImageDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={(open) => {
+          setIsDeleteDialogOpen(open);
+          if (!open) {
+            setImageToDelete(null);
+          }
+        }}
+        image={imageToDelete}
+        onConfirm={handleDeleteConfirm}
       />
     </>
   );
