@@ -8,14 +8,17 @@ import TransformImageDialog from "../components/dialogs/transform-image-dialog";
 import UploadImageDialog from "../components/dialogs/upload-image-dialog";
 import ViewImageDialog from "../components/dialogs/view-image-dialog";
 import useImages from "../hooks/use-images";
-import { defaultImagesFilters, useImagesFilter } from "../hooks/use-images-filter";
+import {
+  defaultImagesFilters,
+  useImagesFilter,
+} from "../hooks/use-images-filter";
 import { useImagesUrlFilters } from "../hooks/use-images-url-filters";
 import { usePagination } from "../hooks/use-pagination";
 import type { Image as ImageType, TransformedImage } from "../types/general";
 import ImageCard from "./components/image-card";
 import ImagesToolbar from "./components/images-toolbar";
 
-const IMAGES_PER_BATCH = 20;
+const IMAGES_PER_BATCH = 9;
 
 const Page = () => {
   const [selectedTransformedImage, setSelectedTransformedImage] =
@@ -90,7 +93,7 @@ const Page = () => {
     patch: Partial<typeof defaultImagesFilters>,
     options?: { resetPagination?: boolean }
   ) => {
-    let shouldReset = options?.resetPagination ?? true;
+    const shouldReset = options?.resetPagination ?? true;
 
     // Handle name separately (debounced in hook)
     if ("name" in patch) {
