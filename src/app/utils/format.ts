@@ -11,6 +11,16 @@ export const formatBytes = (bytes: number) => {
   return `${value.toFixed(value < 10 ? 1 : 0)} ${units[index]}`;
 };
 
+export const formatMegabytes = (bytes: number | null | undefined) => {
+  if (!Number.isFinite(bytes ?? NaN) || !bytes || bytes <= 0) {
+    return "";
+  }
+
+  const megabytes = bytes / (1024 * 1024);
+
+  return megabytes.toFixed(megabytes < 10 ? 1 : 0);
+};
+
 /**
  * Parses a human-entered megabytes value into bytes.
  * Returns null for empty or invalid input.

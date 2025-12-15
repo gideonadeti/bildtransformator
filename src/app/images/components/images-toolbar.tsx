@@ -1,4 +1,5 @@
 import { Search } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +17,7 @@ import {
 } from "@/components/ui/select";
 
 import type { ImagesFilterState } from "../../hooks/use-images-filter";
-import { formatBytes, parseMegabytesInput } from "../../utils/format";
+import { formatBytes, formatMegabytes, parseMegabytesInput } from "../../utils/format";
 
 interface ImagesToolbarProps {
   filters: ImagesFilterState;
@@ -35,15 +36,36 @@ const ImagesToolbar = ({
   onFiltersChange,
   onClearFilters,
 }: ImagesToolbarProps) => {
+  const [minSizeInput, setMinSizeInput] = useState(
+    formatMegabytes(filters.minSize)
+  );
+  const [maxSizeInput, setMaxSizeInput] = useState(
+    formatMegabytes(filters.maxSize)
+  );
+
+  useEffect(() => {
+    if (filters.minSize == null) {
+      setMinSizeInput("");
+    }
+  }, [filters.minSize]);
+
+  useEffect(() => {
+    if (filters.maxSize == null) {
+      setMaxSizeInput("");
+    }
+  }, [filters.maxSize]);
+
   const handleNameChange = (value: string) => {
     onFiltersChange({ name: value });
   };
 
   const handleMinSizeChange = (value: string) => {
+    setMinSizeInput(value);
     onFiltersChange({ minSize: parseMegabytesInput(value) });
   };
 
   const handleMaxSizeChange = (value: string) => {
+    setMaxSizeInput(value);
     onFiltersChange({ maxSize: parseMegabytesInput(value) });
   };
 
@@ -89,6 +111,7 @@ const ImagesToolbar = ({
                 <InputGroupInput
                   inputMode="decimal"
                   placeholder={formatBytes(minSizeInData)}
+                value={minSizeInput}
                   onChange={(event) => handleMinSizeChange(event.target.value)}
                 />
                 <InputGroupAddon align="inline-end">
@@ -103,6 +126,7 @@ const ImagesToolbar = ({
                 <InputGroupInput
                   inputMode="decimal"
                   placeholder={formatBytes(maxSizeInData)}
+                value={maxSizeInput}
                   onChange={(event) => handleMaxSizeChange(event.target.value)}
                 />
                 <InputGroupAddon align="inline-end">
