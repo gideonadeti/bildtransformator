@@ -1,31 +1,8 @@
 "use client";
 
-import { format } from "date-fns";
-import { Search } from "lucide-react";
-import Image from "next/image";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-  InputGroupText,
-} from "@/components/ui/input-group";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import TransformImageDialog from "../components/dialogs/transform-image-dialog";
 import UploadImageDialog from "../components/dialogs/upload-image-dialog";
@@ -33,10 +10,13 @@ import ViewImageDialog from "../components/dialogs/view-image-dialog";
 import useImages from "../hooks/use-images";
 import {
   defaultImagesFilters,
+  type ImagesFilterState,
   useImagesFilter,
 } from "../hooks/use-images-filter";
 import { usePagination } from "../hooks/use-pagination";
 import type { Image as ImageType, TransformedImage } from "../types/general";
+import ImageCard from "./components/image-card";
+import ImagesToolbar from "./components/images-toolbar";
 
 const IMAGES_PER_BATCH = 20;
 
@@ -100,31 +80,8 @@ const Page = () => {
     !!filters.startDate ||
     !!filters.endDate;
 
-  const formatBytes = (bytes: number) => {
-    if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
-    const units = ["B", "KB", "MB", "GB", "TB"];
-    const index = Math.min(
-      Math.floor(Math.log(bytes) / Math.log(1024)),
-      units.length - 1
-    );
-    const value = bytes / 1024 ** index;
-
-    return `${value.toFixed(value < 10 ? 1 : 0)} ${units[index]}`;
-  };
-
-  const parseSizeInput = (value: string): number | null => {
-    const trimmed = value.trim();
-    if (!trimmed) return null;
-
-    const numeric = Number.parseFloat(trimmed.replace(",", "."));
-    if (!Number.isFinite(numeric) || numeric < 0) return null;
-
-    // Treat the input as MB for a more human-friendly scale.
-    return Math.round(numeric * 1024 * 1024);
-  };
-
   const updateFilters = (
-    patch: Partial<typeof filters>,
+    patch: Partial<ImagesFilterState>,
     options?: { resetPagination?: boolean }
   ) => {
     setFilters((prev) => {
@@ -139,28 +96,6 @@ const Page = () => {
     if (options?.resetPagination ?? true) {
       reset();
     }
-  };
-
-  const handleNameChange = (value: string) => {
-    updateFilters({ name: value });
-  };
-
-  const handleMinSizeChange = (value: string) => {
-    updateFilters({ minSize: parseSizeInput(value) });
-  };
-
-  const handleMaxSizeChange = (value: string) => {
-    updateFilters({ maxSize: parseSizeInput(value) });
-  };
-
-  const handleSortChange = (value: string) => {
-    // value is encoded as "<field>-<order>"
-    const [sortBy, sortOrder] = value.split("-") as [
-      "date" | "name" | "size",
-      "asc" | "desc"
-    ];
-
-    updateFilters({ sortBy, sortOrder });
   };
 
   const handleClearFilters = () => {
@@ -238,107 +173,14 @@ const Page = () => {
             </Button>
           </div>
 
-          <div className="space-y-4">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
-              {/* Name filter - always first, takes most horizontal space */}
-              <div className="w-full lg:flex-1 lg:min-w-0 space-y-1">
-                <p className="text-sm font-medium">Name filter</p>
-                <InputGroup className="min-w-0">
-                  <InputGroupAddon>
-                    <InputGroupText>
-                      <Search className="size-4" />
-                    </InputGroupText>
-                  </InputGroupAddon>
-                  <InputGroupInput
-                    className="min-w-0"
-                    placeholder="Search by image name"
-                    value={filters.name}
-                    onChange={(event) => handleNameChange(event.target.value)}
-                  />
-                </InputGroup>
-              </div>
-
-              {/* Size filter - sits after name filter */}
-              <div className="w-full lg:w-auto space-y-1">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">Size filter</p>
-                  <div className="flex flex-col gap-2 sm:flex-row">
-                    <InputGroup className="max-w-[160px]">
-                      <InputGroupAddon>
-                        <InputGroupText>Min</InputGroupText>
-                      </InputGroupAddon>
-                      <InputGroupInput
-                        inputMode="decimal"
-                        placeholder={formatBytes(minSizeInData)}
-                        onChange={(event) =>
-                          handleMinSizeChange(event.target.value)
-                        }
-                      />
-                      <InputGroupAddon align="inline-end">
-                        <InputGroupText>MB</InputGroupText>
-                      </InputGroupAddon>
-                    </InputGroup>
-
-                    <InputGroup className="max-w-[160px]">
-                      <InputGroupAddon>
-                        <InputGroupText>Max</InputGroupText>
-                      </InputGroupAddon>
-                      <InputGroupInput
-                        inputMode="decimal"
-                        placeholder={formatBytes(maxSizeInData)}
-                        onChange={(event) =>
-                          handleMaxSizeChange(event.target.value)
-                        }
-                      />
-                      <InputGroupAddon align="inline-end">
-                        <InputGroupText>MB</InputGroupText>
-                      </InputGroupAddon>
-                    </InputGroup>
-                  </div>
-                </div>
-              </div>
-              {/* Sort - always last, fixed visual width */}
-              <div className="w-full sm:w-[260px]">
-                <p className="mb-1 text-sm font-medium">Sort</p>
-                <Select
-                  value={`${filters.sortBy}-${filters.sortOrder}`}
-                  onValueChange={handleSortChange}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Sort images" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="date-desc">
-                      Upload date — newest first
-                    </SelectItem>
-                    <SelectItem value="date-asc">
-                      Upload date — oldest first
-                    </SelectItem>
-                    <SelectItem value="name-asc">Name — A → Z</SelectItem>
-                    <SelectItem value="name-desc">Name — Z → A</SelectItem>
-                    <SelectItem value="size-asc">
-                      File size — smallest first
-                    </SelectItem>
-                    <SelectItem value="size-desc">
-                      File size — largest first
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {hasActiveFilters && (
-              <div className="flex justify-end">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleClearFilters}
-                >
-                  Clear filters
-                </Button>
-              </div>
-            )}
-          </div>
+          <ImagesToolbar
+            filters={filters}
+            minSizeInData={minSizeInData}
+            maxSizeInData={maxSizeInData}
+            hasActiveFilters={hasActiveFilters}
+            onFiltersChange={(patch) => updateFilters(patch)}
+            onClearFilters={handleClearFilters}
+          />
 
           {displayedImages.length === 0 ? (
             <div className="py-12 text-center">
@@ -351,39 +193,14 @@ const Page = () => {
             <>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {displayedImages.map((image) => (
-                  <Card key={image.id}>
-                    <CardHeader>
-                      <CardTitle className="truncate">
-                        {image.originalName}
-                      </CardTitle>
-                      <CardDescription className="space-y-0.5">
-                        <span className="block">
-                          {formatBytes(image.size)} •{" "}
-                          {format(new Date(image.createdAt), "PPp")}
-                        </span>
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="relative aspect-video rounded-lg overflow-hidden border border-border">
-                        <Image
-                          src={image.secureUrl}
-                          alt={image.originalName}
-                          fill
-                          className="object-contain"
-                        />
-                      </div>
-                      <Button
-                        variant="outline"
-                        className="w-full"
-                        onClick={() => {
-                          setSelectedImage(image);
-                          setIsTransformDialogOpen(true);
-                        }}
-                      >
-                        Transform
-                      </Button>
-                    </CardContent>
-                  </Card>
+                  <ImageCard
+                    key={image.id}
+                    image={image}
+                    onTransformClick={() => {
+                      setSelectedImage(image);
+                      setIsTransformDialogOpen(true);
+                    }}
+                  />
                 ))}
               </div>
 
