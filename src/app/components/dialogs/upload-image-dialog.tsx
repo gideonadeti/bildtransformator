@@ -41,7 +41,7 @@ const UploadImageDialog = ({ open, onOpenChange }: UploadImageDialogProps) => {
 
   useEffect(() => {
     if (!open) {
-      form.resetField("image");
+      form.reset();
 
       if (imageUrl) {
         URL.revokeObjectURL(imageUrl);
@@ -49,7 +49,7 @@ const UploadImageDialog = ({ open, onOpenChange }: UploadImageDialogProps) => {
 
       setImageUrl(null);
     }
-  }, [open, form.resetField, imageUrl]);
+  }, [open, form.reset, imageUrl]);
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
@@ -106,12 +106,16 @@ const UploadImageDialog = ({ open, onOpenChange }: UploadImageDialogProps) => {
     }
 
     setImageUrl(null);
-    form.resetField("image");
+    form.reset();
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent
+        showCloseButton={false}
+        onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>Upload Image</DialogTitle>
         </DialogHeader>
@@ -166,6 +170,7 @@ const UploadImageDialog = ({ open, onOpenChange }: UploadImageDialogProps) => {
                         size="icon-sm"
                         className="absolute top-2 right-2 rounded-full"
                         onClick={() => handleRemoveImage()}
+                        disabled={uploadImageMutation.isPending}
                       >
                         <X />
                       </Button>
