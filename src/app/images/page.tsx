@@ -7,7 +7,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import DeleteImageDialog from "../components/dialogs/delete-image-dialog";
 import TransformImageDialog from "../components/dialogs/transform-image-dialog";
 import UploadImageDialog from "../components/dialogs/upload-image-dialog";
-import ViewImageDialog from "../components/dialogs/view-image-dialog";
 import useImages from "../hooks/use-images";
 import {
   defaultImagesFilters,
@@ -15,22 +14,14 @@ import {
 } from "../hooks/use-images-filter";
 import { useImagesUrlFilters } from "../hooks/use-images-url-filters";
 import { usePagination } from "../hooks/use-pagination";
-import type { Image as ImageType, TransformedImage } from "../types/general";
+import type { Image as ImageType } from "../types/general";
 import ImageCard from "./components/image-card";
 import ImagesToolbar from "./components/images-toolbar";
 
 const IMAGES_PER_BATCH = 9;
 
 const Page = () => {
-  const [selectedTransformedImage, setSelectedTransformedImage] =
-    useState<TransformedImage | null>(null);
-  const [isViewImageDialogOpen, setIsViewImageDialogOpen] = useState(false);
-  const { imagesQuery } = useImages({
-    onTransformationComplete: (transformedImage) => {
-      setSelectedTransformedImage(transformedImage);
-      setIsViewImageDialogOpen(true);
-    },
-  });
+  const { imagesQuery } = useImages();
   const images = imagesQuery.data || [];
   const [isUploadImageDialogOpen, setIsUploadImageDialogOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<ImageType | null>(null);
@@ -273,16 +264,6 @@ const Page = () => {
           }
         }}
         image={selectedImage}
-      />
-      <ViewImageDialog
-        open={isViewImageDialogOpen}
-        onOpenChange={(open) => {
-          setIsViewImageDialogOpen(open);
-          if (!open) {
-            setSelectedTransformedImage(null);
-          }
-        }}
-        transformedImage={selectedTransformedImage}
       />
       <DeleteImageDialog
         open={isDeleteDialogOpen}
