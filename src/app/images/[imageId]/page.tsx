@@ -11,6 +11,13 @@ import { toast } from "sonner";
 import DeleteImageDialog from "@/app/components/dialogs/delete-image-dialog";
 import TransformImageDialog from "@/app/components/dialogs/transform-image-dialog";
 import useImages from "@/app/hooks/use-images";
+import { usePagination } from "@/app/hooks/use-pagination";
+import {
+  defaultTransformedImagesFilters,
+  useTransformedImagesFilter,
+} from "@/app/hooks/use-transformed-images-filter";
+import { useTransformedImagesUrlFilters } from "@/app/hooks/use-transformed-images-url-filters";
+import TransformedImagesToolbar from "@/app/images/components/transformed-images-toolbar";
 import { formatBytes } from "@/app/utils/format";
 import { downloadImage } from "@/app/utils/image-utils";
 import { Button } from "@/components/ui/button";
@@ -22,6 +29,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+
+const TRANSFORMED_IMAGES_PER_BATCH = 9;
 
 const Page = () => {
   const params = useParams();
@@ -36,6 +45,80 @@ const Page = () => {
   const image = useMemo(() => {
     return images.find((img) => img.id === imageId) || null;
   }, [images, imageId]);
+
+  const transformedImages = image?.transformedImages || [];
+  const transformedCount = transformedImages.length;
+
+  // Transformed images filtering and sorting
+  const { filters, replaceFiltersInUrl } = useTransformedImagesUrlFilters();
+  const { displayedCount, reset, loadMore } = usePagination(
+    TRANSFORMED_IMAGES_PER_BATCH
+  );
+
+  const { minSizeInData, maxSizeInData } = useMemo(() => {
+    if (transformedImages.length === 0) {
+      return {
+        minSizeInData: 0,
+        maxSizeInData: 0,
+      };
+    }
+
+    let min = Number.POSITIVE_INFINITY;
+    let max = Number.NEGATIVE_INFINITY;
+
+    for (const transformedImage of transformedImages) {
+      if (transformedImage.size < min) min = transformedImage.size;
+      if (transformedImage.size > max) max = transformedImage.size;
+    }
+
+    if (!Number.isFinite(min) || !Number.isFinite(max)) {
+      return {
+        minSizeInData: 0,
+        maxSizeInData: 0,
+      };
+    }
+
+    return {
+      minSizeInData: Math.floor(min),
+      maxSizeInData: Math.ceil(max),
+    };
+  }, [transformedImages]);
+
+  const filteredAndSortedTransformedImages = useTransformedImagesFilter(
+    transformedImages,
+    filters
+  );
+
+  const displayedTransformedImages = filteredAndSortedTransformedImages.slice(
+    0,
+    displayedCount
+  );
+  const hasMore = displayedCount < filteredAndSortedTransformedImages.length;
+
+  const hasActiveFilters = filters.minSize != null || filters.maxSize != null;
+
+  const updateFilters = (
+    patch: Partial<typeof defaultTransformedImagesFilters>,
+    options?: { resetPagination?: boolean }
+  ) => {
+    const shouldReset = options?.resetPagination ?? true;
+
+    const nextFilters = {
+      ...filters,
+      ...patch,
+    };
+
+    replaceFiltersInUrl(nextFilters);
+
+    if (shouldReset) {
+      reset();
+    }
+  };
+
+  const handleClearFilters = () => {
+    replaceFiltersInUrl(defaultTransformedImagesFilters);
+    reset();
+  };
 
   const handleDelete = () => {
     // Placeholder handler
@@ -63,7 +146,6 @@ const Page = () => {
     setIsTransformDialogOpen(true);
   };
 
-  const transformedCount = image?.transformedImages?.length || 0;
   const formatDisplay = image?.format?.toUpperCase() || "N/A";
 
   if (isLoading) {
@@ -191,32 +273,67 @@ const Page = () => {
               <h2 className="text-2xl font-semibold">
                 Transformed Images ({transformedCount})
               </h2>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {image.transformedImages.map((transformedImage) => (
-                  <Card key={transformedImage.id}>
-                    <CardContent className="p-4">
-                      <div className="relative aspect-video rounded-lg overflow-hidden border border-border mb-3">
-                        <Image
-                          src={transformedImage.secureUrl}
-                          alt={`Transformed ${image.originalName}`}
-                          fill
-                          className="object-contain"
-                        />
-                      </div>
-                      <div className="space-y-1 text-sm">
-                        <div>
-                          <span className="font-medium">Size:</span>{" "}
-                          {formatBytes(transformedImage.size)}
-                        </div>
-                        <div>
-                          <span className="font-medium">Created:</span>{" "}
-                          {format(new Date(transformedImage.createdAt), "PPp")}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+
+              <TransformedImagesToolbar
+                filters={filters}
+                minSizeInData={minSizeInData}
+                maxSizeInData={maxSizeInData}
+                hasActiveFilters={hasActiveFilters}
+                onFiltersChange={(patch) => updateFilters(patch)}
+                onClearFilters={handleClearFilters}
+              />
+
+              {displayedTransformedImages.length === 0 ? (
+                <div className="py-12 text-center">
+                  <p className="text-muted-foreground text-lg">
+                    No transformed images found. Try adjusting your filters.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {displayedTransformedImages.map((transformedImage) => (
+                      <Card key={transformedImage.id}>
+                        <CardContent className="p-4">
+                          <div className="relative aspect-video rounded-lg overflow-hidden border border-border mb-3">
+                            <Image
+                              src={transformedImage.secureUrl}
+                              alt={`Transformed ${image.originalName}`}
+                              fill
+                              className="object-contain"
+                            />
+                          </div>
+                          <div className="space-y-1 text-sm">
+                            <div>
+                              <span className="font-medium">Size:</span>{" "}
+                              {formatBytes(transformedImage.size)}
+                            </div>
+                            <div>
+                              <span className="font-medium">Created:</span>{" "}
+                              {format(
+                                new Date(transformedImage.createdAt),
+                                "PPp"
+                              )}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+
+                  {hasMore && (
+                    <div className="py-8 text-center">
+                      <Button onClick={loadMore} variant="outline">
+                        Load More
+                      </Button>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        Showing {displayedCount} of{" "}
+                        {filteredAndSortedTransformedImages.length} images
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           )}
         </div>
