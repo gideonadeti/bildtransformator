@@ -8,11 +8,8 @@ import TransformImageDialog from "../components/dialogs/transform-image-dialog";
 import UploadImageDialog from "../components/dialogs/upload-image-dialog";
 import ViewImageDialog from "../components/dialogs/view-image-dialog";
 import useImages from "../hooks/use-images";
-import {
-  defaultImagesFilters,
-  type ImagesFilterState,
-  useImagesFilter,
-} from "../hooks/use-images-filter";
+import { defaultImagesFilters, useImagesFilter } from "../hooks/use-images-filter";
+import { useImagesUrlFilters } from "../hooks/use-images-url-filters";
 import { usePagination } from "../hooks/use-pagination";
 import type { Image as ImageType, TransformedImage } from "../types/general";
 import ImageCard from "./components/image-card";
@@ -35,7 +32,7 @@ const Page = () => {
   const [selectedImage, setSelectedImage] = useState<ImageType | null>(null);
   const [isTransformDialogOpen, setIsTransformDialogOpen] = useState(false);
 
-  const [filters, setFilters] = useState(defaultImagesFilters);
+  const { filters, replaceFiltersInUrl } = useImagesUrlFilters();
 
   const { displayedCount, reset, loadMore } = usePagination(IMAGES_PER_BATCH);
 
@@ -89,17 +86,15 @@ const Page = () => {
     !!filters.endDate;
 
   const updateFilters = (
-    patch: Partial<ImagesFilterState>,
+    patch: Partial<typeof defaultImagesFilters>,
     options?: { resetPagination?: boolean }
   ) => {
-    setFilters((prev) => {
-      const next = {
-        ...prev,
-        ...patch,
-      };
+    const nextFilters = {
+      ...filters,
+      ...patch,
+    };
 
-      return next;
-    });
+    replaceFiltersInUrl(nextFilters);
 
     if (options?.resetPagination ?? true) {
       reset();
@@ -107,7 +102,7 @@ const Page = () => {
   };
 
   const handleClearFilters = () => {
-    setFilters(defaultImagesFilters);
+    replaceFiltersInUrl(defaultImagesFilters);
     reset();
   };
 
