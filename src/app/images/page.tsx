@@ -32,7 +32,8 @@ const Page = () => {
   const [selectedImage, setSelectedImage] = useState<ImageType | null>(null);
   const [isTransformDialogOpen, setIsTransformDialogOpen] = useState(false);
 
-  const { filters, replaceFiltersInUrl } = useImagesUrlFilters();
+  const { filters, nameInput, setNameInput, replaceFiltersInUrl } =
+    useImagesUrlFilters();
 
   const { displayedCount, reset, loadMore } = usePagination(IMAGES_PER_BATCH);
 
@@ -89,14 +90,25 @@ const Page = () => {
     patch: Partial<typeof defaultImagesFilters>,
     options?: { resetPagination?: boolean }
   ) => {
-    const nextFilters = {
-      ...filters,
-      ...patch,
-    };
+    let shouldReset = options?.resetPagination ?? true;
 
-    replaceFiltersInUrl(nextFilters);
+    // Handle name separately (debounced in hook)
+    if ("name" in patch) {
+      setNameInput(patch.name ?? "");
+    }
 
-    if (options?.resetPagination ?? true) {
+    const { name: _ignoredName, ...rest } = patch;
+
+    if (Object.keys(rest).length > 0) {
+      const nextFilters = {
+        ...filters,
+        ...rest,
+      };
+
+      replaceFiltersInUrl(nextFilters);
+    }
+
+    if (shouldReset) {
       reset();
     }
   };
@@ -187,6 +199,8 @@ const Page = () => {
             minSizeInData={minSizeInData}
             maxSizeInData={maxSizeInData}
             availableFormats={availableFormats}
+            nameValue={nameInput}
+            onNameChange={(value) => updateFilters({ name: value })}
             hasActiveFilters={hasActiveFilters}
             onFiltersChange={(patch) => updateFilters(patch)}
             onClearFilters={handleClearFilters}

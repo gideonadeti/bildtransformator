@@ -1,7 +1,8 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useDebouncedCallback } from "use-debounce";
 
 import {
   defaultImagesFilters,
@@ -129,6 +130,9 @@ export const useImagesUrlFilters = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const [nameInput, setNameInput] = useState<string>(() => {
+    return searchParams.get("name") ?? "";
+  });
 
   const searchParamsString = searchParams.toString();
 
@@ -137,19 +141,67 @@ export const useImagesUrlFilters = () => {
     [searchParamsString]
   );
 
+  // Use refs to access latest values inside debounced callback without recreating it
+  const filtersRef = useRef(filters);
+  const searchParamsStringRef = useRef(searchParamsString);
+  const routerRef = useRef(router);
+  const pathnameRef = useRef(pathname);
+
+  useEffect(() => {
+    filtersRef.current = filters;
+    searchParamsStringRef.current = searchParamsString;
+    routerRef.current = router;
+    pathnameRef.current = pathname;
+  }, [filters, searchParamsString, router, pathname]);
+
+  // Keep local name input in sync if URL filters change externally (back/forward/etc.)
+  useEffect(() => {
+    setNameInput(filters.name ?? "");
+  }, [filters.name]);
+
   const replaceFiltersInUrl = (nextFilters: ImagesFilterState) => {
     const nextParams = buildSearchParamsFromFilters(
       nextFilters,
-      searchParamsString
+      searchParamsStringRef.current
     );
 
-    replaceUrlIfChanged(router, pathname, searchParamsString, nextParams);
+    replaceUrlIfChanged(
+      routerRef.current,
+      pathnameRef.current,
+      searchParamsStringRef.current,
+      nextParams
+    );
   };
+
+  // Debounce only the name input into the URL
+  const debouncedUpdateNameInUrl = useDebouncedCallback((name: string) => {
+    const nextFilters: ImagesFilterState = {
+      ...filtersRef.current,
+      name,
+    };
+
+    const nextParams = buildSearchParamsFromFilters(
+      nextFilters,
+      searchParamsStringRef.current
+    );
+
+    replaceUrlIfChanged(
+      routerRef.current,
+      pathnameRef.current,
+      searchParamsStringRef.current,
+      nextParams
+    );
+  }, 300);
+
+  // Update URL when name input changes (debounced)
+  useEffect(() => {
+    debouncedUpdateNameInUrl(nameInput);
+  }, [nameInput, debouncedUpdateNameInUrl]);
 
   return {
     filters,
+    nameInput,
+    setNameInput,
     replaceFiltersInUrl,
   };
 };
-
-

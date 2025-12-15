@@ -24,6 +24,8 @@ interface ImagesToolbarProps {
   minSizeInData: number;
   maxSizeInData: number;
   availableFormats: string[];
+  nameValue: string;
+  onNameChange: (value: string) => void;
   hasActiveFilters: boolean;
   onFiltersChange: (patch: Partial<ImagesFilterState>) => void;
   onClearFilters: () => void;
@@ -34,6 +36,8 @@ const ImagesToolbar = ({
   minSizeInData,
   maxSizeInData,
   availableFormats,
+  nameValue,
+  onNameChange,
   hasActiveFilters,
   onFiltersChange,
   onClearFilters,
@@ -56,10 +60,6 @@ const ImagesToolbar = ({
       setMaxSizeInput("");
     }
   }, [filters.maxSize]);
-
-  const handleNameChange = (value: string) => {
-    onFiltersChange({ name: value });
-  };
 
   const handleMinSizeChange = (value: string) => {
     setMinSizeInput(value);
@@ -99,8 +99,8 @@ const ImagesToolbar = ({
             <InputGroupInput
               className="min-w-0"
               placeholder="Search by image name"
-              value={filters.name}
-              onChange={(event) => handleNameChange(event.target.value)}
+              value={nameValue}
+              onChange={(event) => onNameChange(event.target.value)}
             />
           </InputGroup>
         </div>
