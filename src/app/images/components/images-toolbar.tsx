@@ -23,6 +23,7 @@ interface ImagesToolbarProps {
   filters: ImagesFilterState;
   minSizeInData: number;
   maxSizeInData: number;
+  availableFormats: string[];
   hasActiveFilters: boolean;
   onFiltersChange: (patch: Partial<ImagesFilterState>) => void;
   onClearFilters: () => void;
@@ -32,6 +33,7 @@ const ImagesToolbar = ({
   filters,
   minSizeInData,
   maxSizeInData,
+  availableFormats,
   hasActiveFilters,
   onFiltersChange,
   onClearFilters,
@@ -67,6 +69,10 @@ const ImagesToolbar = ({
   const handleMaxSizeChange = (value: string) => {
     setMaxSizeInput(value);
     onFiltersChange({ maxSize: parseMegabytesInput(value) });
+  };
+
+  const handleFormatChange = (value: string) => {
+    onFiltersChange({ format: value === "all" ? null : value });
   };
 
   const handleSortChange = (value: string) => {
@@ -135,6 +141,27 @@ const ImagesToolbar = ({
               </InputGroup>
             </div>
           </div>
+        </div>
+
+        {/* Format filter - sits after size filter */}
+        <div className="w-full sm:w-[180px] space-y-1">
+          <p className="mb-1 text-sm font-medium">Format filter</p>
+          <Select
+            value={filters.format || "all"}
+            onValueChange={handleFormatChange}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="All formats" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All formats</SelectItem>
+              {availableFormats.map((format) => (
+                <SelectItem key={format} value={format}>
+                  {format.toUpperCase()}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Sort - always last, fixed visual width */}

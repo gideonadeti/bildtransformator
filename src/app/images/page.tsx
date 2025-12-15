@@ -39,32 +39,39 @@ const Page = () => {
 
   const { displayedCount, reset, loadMore } = usePagination(IMAGES_PER_BATCH);
 
-  const { minSizeInData, maxSizeInData } = useMemo(() => {
+  const { minSizeInData, maxSizeInData, availableFormats } = useMemo(() => {
     if (images.length === 0) {
       return {
         minSizeInData: 0,
         maxSizeInData: 0,
+        availableFormats: [],
       };
     }
 
     let min = Number.POSITIVE_INFINITY;
     let max = Number.NEGATIVE_INFINITY;
+    const formatsSet = new Set<string>();
 
     for (const image of images) {
       if (image.size < min) min = image.size;
       if (image.size > max) max = image.size;
+      if (image.format) {
+        formatsSet.add(image.format.toLowerCase());
+      }
     }
 
     if (!Number.isFinite(min) || !Number.isFinite(max)) {
       return {
         minSizeInData: 0,
         maxSizeInData: 0,
+        availableFormats: Array.from(formatsSet).sort(),
       };
     }
 
     return {
       minSizeInData: Math.floor(min),
       maxSizeInData: Math.ceil(max),
+      availableFormats: Array.from(formatsSet).sort(),
     };
   }, [images]);
 
@@ -77,6 +84,7 @@ const Page = () => {
     !!filters.name ||
     filters.minSize != null ||
     filters.maxSize != null ||
+    filters.format != null ||
     !!filters.startDate ||
     !!filters.endDate;
 
@@ -131,6 +139,12 @@ const Page = () => {
                 </div>
               </div>
 
+              {/* Format filter skeleton */}
+              <div className="w-full sm:w-[180px] space-y-1">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-9 w-full" />
+              </div>
+
               {/* Sort skeleton */}
               <div className="w-full sm:w-[260px] space-y-1">
                 <Skeleton className="h-4 w-16" />
@@ -177,6 +191,7 @@ const Page = () => {
             filters={filters}
             minSizeInData={minSizeInData}
             maxSizeInData={maxSizeInData}
+            availableFormats={availableFormats}
             hasActiveFilters={hasActiveFilters}
             onFiltersChange={(patch) => updateFilters(patch)}
             onClearFilters={handleClearFilters}

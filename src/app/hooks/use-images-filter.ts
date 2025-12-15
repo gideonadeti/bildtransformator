@@ -10,6 +10,7 @@ export interface ImagesFilterState {
   name: string;
   minSize: number | null;
   maxSize: number | null;
+  format: string | null;
   startDate: string | null;
   endDate: string | null;
   sortBy: ImagesSortField;
@@ -20,6 +21,7 @@ export const defaultImagesFilters: ImagesFilterState = {
   name: "",
   minSize: null,
   maxSize: null,
+  format: null,
   startDate: null,
   endDate: null,
   sortBy: "date",
@@ -68,6 +70,14 @@ const filterBySizeRange = (
 
     return true;
   });
+};
+
+const filterByFormat = (images: Image[], format: string | null) => {
+  if (!format) return images;
+
+  return images.filter((image) =>
+    image.format.toLowerCase() === format.toLowerCase()
+  );
 };
 
 const filterByDateRange = (
@@ -139,8 +149,9 @@ export const applyImagesFilters = (
 ) => {
   const afterName = filterByName(images, filters.name);
   const afterSize = filterBySizeRange(afterName, filters.minSize, filters.maxSize);
+  const afterFormat = filterByFormat(afterSize, filters.format);
   const afterDate = filterByDateRange(
-    afterSize,
+    afterFormat,
     filters.startDate,
     filters.endDate
   );
