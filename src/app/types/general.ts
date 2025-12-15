@@ -16,6 +16,8 @@ export interface Image {
   format: string;
   createdAt: string;
   updatedAt: string;
+
+  transformedImages: TransformedImage[];
 }
 
 export interface TransformedImage {
