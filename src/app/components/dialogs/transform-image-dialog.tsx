@@ -357,18 +357,69 @@ const TransformImageDialog = ({
                       <FormField
                         control={form.control}
                         name="resize.fit"
-                        render={({ field }) => (
+                        render={() => (
                           <FormItem>
                             <FormLabel>Fit Mode</FormLabel>
                             <FormControl>
                               <Select
-                                onValueChange={field.onChange}
-                                value={field.value ?? ""}
+                                value={form.watch("resize.fit") ?? "none"}
+                                onValueChange={(
+                                  value:
+                                    | "none"
+                                    | "contain"
+                                    | "cover"
+                                    | "fill"
+                                    | "inside"
+                                    | "outside"
+                                ) => {
+                                  const next =
+                                    value === "none"
+                                      ? undefined
+                                      : (value as
+                                          | "contain"
+                                          | "cover"
+                                          | "fill"
+                                          | "inside"
+                                          | "outside");
+                                  const current =
+                                    form.getValues("resize") || {};
+                                  const updated: {
+                                    width?: number;
+                                    height?: number;
+                                    fit?:
+                                      | "contain"
+                                      | "cover"
+                                      | "fill"
+                                      | "inside"
+                                      | "outside";
+                                  } = {
+                                    width: current?.width,
+                                    height: current?.height,
+                                    fit: next,
+                                  };
+                                  const shouldClear =
+                                    updated.width == null &&
+                                    updated.height == null &&
+                                    updated.fit == null;
+                                  form.setValue(
+                                    "resize",
+                                    shouldClear ? undefined : updated,
+                                    {
+                                      shouldDirty: true,
+                                      shouldValidate: true,
+                                    }
+                                  );
+                                }}
                               >
                                 <SelectTrigger className="w-full">
-                                  <SelectValue placeholder="Select fit mode" />
+                                  <SelectValue placeholder="No fit (default)" />
                                 </SelectTrigger>
                                 <SelectContent>
+                                  <SelectItem value="none">
+                                    <span className="text-muted-foreground">
+                                      No fit (default)
+                                    </span>
+                                  </SelectItem>
                                   <SelectItem value="contain">
                                     Contain
                                   </SelectItem>
