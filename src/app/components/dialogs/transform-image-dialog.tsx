@@ -54,6 +54,16 @@ const TransformImageDialog = ({
 
   const form = useForm<TransformImageFormValues>({
     resolver: zodResolver(transformImageFormSchema),
+    // Keep values/registers even when fields unmount (accordion closed)
+    shouldUnregister: false,
+    defaultValues: {
+      resize: undefined,
+      crop: undefined,
+      rotate: undefined,
+      grayscale: undefined,
+      tint: "",
+      order: [],
+    },
   });
 
   // Watch form values to auto-generate order
@@ -71,10 +81,24 @@ const TransformImageDialog = ({
 
     const hasResize = resize && (resize.width != null || resize.height != null);
     if (hasResize) transforms.push("resize");
-    if (crop) transforms.push("crop");
-    if (rotate != null) transforms.push("rotate");
-    if (grayscale === true) transforms.push("grayscale");
-    if (tint != null && tint.trim() !== "") transforms.push("tint");
+
+    const hasCrop =
+      crop != null &&
+      (crop.left != null ||
+        crop.top != null ||
+        crop.width != null ||
+        crop.height != null);
+    if (hasCrop) transforms.push("crop");
+
+    const hasRotate =
+      typeof rotate === "number" && Number.isFinite(rotate as number);
+    if (hasRotate) transforms.push("rotate");
+
+    const hasGrayscale = grayscale === true;
+    if (hasGrayscale) transforms.push("grayscale");
+
+    const hasTint = tint != null && tint.trim() !== "";
+    if (hasTint) transforms.push("tint");
 
     return transforms;
   }, [resize, crop, rotate, grayscale, tint]);
@@ -252,21 +276,37 @@ const TransformImageDialog = ({
                         <FormField
                           control={form.control}
                           name="resize.width"
-                          render={({ field }) => (
+                          render={() => (
                             <FormItem>
                               <FormLabel>Width</FormLabel>
                               <FormControl>
                                 <Input
                                   type="number"
                                   placeholder="Width"
-                                  {...field}
+                                  value={form.watch("resize.width") ?? ""}
                                   onChange={(e) => {
                                     const value = e.target.value;
-                                    field.onChange(
-                                      value === "" ? undefined : Number(value)
+                                    const next =
+                                      value === "" ? undefined : Number(value);
+                                    const current =
+                                      form.getValues("resize") || {};
+                                    const updated = {
+                                      ...current,
+                                      width: next,
+                                    };
+                                    const shouldClear =
+                                      updated.width == null &&
+                                      updated.height == null &&
+                                      updated.fit == null;
+                                    form.setValue(
+                                      "resize",
+                                      shouldClear ? undefined : updated,
+                                      {
+                                        shouldDirty: true,
+                                        shouldValidate: true,
+                                      }
                                     );
                                   }}
-                                  value={field.value ?? ""}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -276,21 +316,37 @@ const TransformImageDialog = ({
                         <FormField
                           control={form.control}
                           name="resize.height"
-                          render={({ field }) => (
+                          render={() => (
                             <FormItem>
                               <FormLabel>Height</FormLabel>
                               <FormControl>
                                 <Input
                                   type="number"
                                   placeholder="Height"
-                                  {...field}
+                                  value={form.watch("resize.height") ?? ""}
                                   onChange={(e) => {
                                     const value = e.target.value;
-                                    field.onChange(
-                                      value === "" ? undefined : Number(value)
+                                    const next =
+                                      value === "" ? undefined : Number(value);
+                                    const current =
+                                      form.getValues("resize") || {};
+                                    const updated = {
+                                      ...current,
+                                      height: next,
+                                    };
+                                    const shouldClear =
+                                      updated.width == null &&
+                                      updated.height == null &&
+                                      updated.fit == null;
+                                    form.setValue(
+                                      "resize",
+                                      shouldClear ? undefined : updated,
+                                      {
+                                        shouldDirty: true,
+                                        shouldValidate: true,
+                                      }
                                     );
                                   }}
-                                  value={field.value ?? ""}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -464,7 +520,7 @@ const TransformImageDialog = ({
                       <FormField
                         control={form.control}
                         name="rotate"
-                        render={({ field }) => (
+                        render={() => (
                           <FormItem>
                             <FormLabel>Degrees (-360 to 360)</FormLabel>
                             <FormControl>
@@ -473,14 +529,16 @@ const TransformImageDialog = ({
                                 placeholder="Degrees"
                                 min={-360}
                                 max={360}
-                                {...field}
+                                value={form.watch("rotate") ?? ""}
                                 onChange={(e) => {
                                   const value = e.target.value;
-                                  field.onChange(
-                                    value === "" ? undefined : Number(value)
-                                  );
+                                  const next =
+                                    value === "" ? undefined : Number(value);
+                                  form.setValue("rotate", next, {
+                                    shouldDirty: true,
+                                    shouldValidate: true,
+                                  });
                                 }}
-                                value={field.value ?? ""}
                               />
                             </FormControl>
                             <FormMessage />
@@ -497,7 +555,7 @@ const TransformImageDialog = ({
                       <FormField
                         control={form.control}
                         name="grayscale"
-                        render={({ field }) => (
+                        render={() => (
                           <FormItem className="flex flex-row items-center justify-between rounded-lg border px-3 py-2">
                             <div className="space-y-0.5">
                               <FormLabel className="text-sm font-medium">
@@ -508,28 +566,48 @@ const TransformImageDialog = ({
                               </p>
                             </div>
                             <FormControl>
-                              <button
-                                type="button"
-                                role="switch"
-                                aria-checked={Boolean(field.value)}
-                                onClick={() => {
-                                  const next = !field.value;
-                                  field.onChange(next ? true : undefined);
-                                }}
-                                className={`inline-flex h-6 w-11 items-center rounded-full border transition-colors ${
-                                  field.value
-                                    ? "bg-primary border-primary"
-                                    : "bg-input border-border"
-                                }`}
-                              >
-                                <span
-                                  className={`inline-block h-5 w-5 rounded-full bg-background shadow transition-transform ${
-                                    field.value
-                                      ? "translate-x-5"
-                                      : "translate-x-1"
-                                  }`}
-                                />
-                              </button>
+                              {/*
+                                Treat only boolean true as "on".
+                                When toggling off, set the field to undefined so it drops out
+                                of enabledTransforms and is not sent to the backend.
+                              */}
+                              {/*
+                                We derive UI state from form.watch("grayscale") to ensure
+                                the switch always reflects the latest form value, even
+                                after closing/reopening the accordion.
+                              */}
+                              {(() => {
+                                const isOn = form.watch("grayscale") === true;
+
+                                return (
+                                  <button
+                                    type="button"
+                                    role="switch"
+                                    aria-checked={isOn}
+                                    onClick={() => {
+                                      form.setValue(
+                                        "grayscale",
+                                        isOn ? undefined : true,
+                                        {
+                                          shouldValidate: true,
+                                          shouldDirty: true,
+                                        }
+                                      );
+                                    }}
+                                    className={`inline-flex h-6 w-11 items-center rounded-full border transition-colors ${
+                                      isOn
+                                        ? "bg-primary border-primary"
+                                        : "bg-input border-border"
+                                    }`}
+                                  >
+                                    <span
+                                      className={`inline-block h-5 w-5 rounded-full bg-background shadow transition-transform ${
+                                        isOn ? "translate-x-5" : "translate-x-1"
+                                      }`}
+                                    />
+                                  </button>
+                                );
+                              })()}
                             </FormControl>
                             <FormMessage />
                           </FormItem>
