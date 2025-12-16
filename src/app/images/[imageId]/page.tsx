@@ -129,10 +129,6 @@ const Page = () => {
     if (!image) return;
     try {
       await downloadImage(image.secureUrl, image.originalName);
-      toast.success("Download started", {
-        description: image.originalName,
-        id: `download-${image.id}`,
-      });
     } catch (error) {
       console.error("Failed to download image:", error);
       toast.error("Failed to download image", {
