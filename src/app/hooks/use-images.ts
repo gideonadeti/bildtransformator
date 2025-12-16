@@ -10,6 +10,7 @@ import type {
   TransformImageFormValues,
 } from "../types/general";
 import {
+  deleteImage,
   fetchImages,
   fetchTransformedImages,
   transformImage,
@@ -141,11 +142,55 @@ const useImages = (options?: UseImagesOptions) => {
     },
   });
 
+  const deleteImageMutation = useMutation<
+    Image,
+    AxiosError<{ message: string }>,
+    {
+      id: string;
+      onOpenChange?: (open: boolean) => void;
+      onSuccess?: () => void;
+    }
+  >({
+    mutationFn: async ({ id }) => {
+      return deleteImage(id);
+    },
+    onError: (error) => {
+      const message =
+        error.response?.data?.message || "Failed to delete image";
+
+      toast.error(message, { id: "delete-image-error" });
+    },
+    onSuccess: (deletedImage, { onOpenChange, onSuccess }) => {
+      onOpenChange?.(false);
+
+      toast.success("Image deleted successfully", {
+        id: "delete-image-success",
+      });
+
+      // Remove from images query cache
+      queryClient.setQueryData(["images"], (oldImages: Image[]) =>
+        oldImages.filter((img) => img.id !== deletedImage.id)
+      );
+
+      // Remove from transformed images query cache if it was a transformed image
+      queryClient.setQueryData(
+        ["transformed-images"],
+        (oldTransformedImages: TransformedImage[]) =>
+          oldTransformedImages.filter(
+            (img) => img.originalImageId !== deletedImage.id
+          )
+      );
+
+      onSuccess?.();
+    },
+  });
+
   return {
     imagesQuery,
     transformedImagesQuery,
     uploadImageMutation,
     transformImageMutation,
+    deleteImageMutation,
   };
 };
 

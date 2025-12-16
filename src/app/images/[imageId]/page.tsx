@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { ArrowLeft, Download, Trash2, Wand2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -34,8 +34,9 @@ const TRANSFORMED_IMAGES_PER_BATCH = 9;
 
 const Page = () => {
   const params = useParams();
+  const router = useRouter();
   const imageId = params?.imageId as string;
-  const { imagesQuery } = useImages();
+  const { imagesQuery, deleteImageMutation } = useImages();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isTransformDialogOpen, setIsTransformDialogOpen] = useState(false);
 
@@ -121,8 +122,15 @@ const Page = () => {
   };
 
   const handleDelete = () => {
-    // Placeholder handler
-    console.log("Delete image:", imageId);
+    if (!imageId) return;
+
+    deleteImageMutation.mutate({
+      id: imageId,
+      onOpenChange: setIsDeleteDialogOpen,
+      onSuccess: () => {
+        router.push("/images");
+      },
+    });
   };
 
   const handleDownload = async () => {
@@ -341,6 +349,7 @@ const Page = () => {
         onOpenChange={setIsDeleteDialogOpen}
         image={image}
         onConfirm={handleDelete}
+        isPending={deleteImageMutation.isPending}
       />
 
       {/* Transform dialog */}

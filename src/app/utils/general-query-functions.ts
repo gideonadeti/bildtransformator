@@ -54,3 +54,15 @@ export const transformImage = async (
     throw error;
   }
 };
+
+export const deleteImage = async (id: string) => {
+  try {
+    const response = await axios.delete(`/images/${id}`);
+
+    return response.data;
+  } catch (error) {
+    console.error("Error from `deleteImage`:", error);
+
+    throw error;
+  }
+};
