@@ -73,7 +73,7 @@ const TransformImageDialog = ({
     if (hasResize) transforms.push("resize");
     if (crop) transforms.push("crop");
     if (rotate != null) transforms.push("rotate");
-    if (grayscale != null) transforms.push("grayscale");
+    if (grayscale === true) transforms.push("grayscale");
     if (tint != null && tint.trim() !== "") transforms.push("tint");
 
     return transforms;
@@ -139,8 +139,8 @@ const TransformImageDialog = ({
       cleanedData.rotate = formValues.rotate;
     }
 
-    if (formValues.grayscale != null) {
-      cleanedData.grayscale = formValues.grayscale;
+    if (formValues.grayscale === true) {
+      cleanedData.grayscale = true;
     }
 
     if (formValues.tint != null && formValues.tint.trim() !== "") {
@@ -511,8 +511,11 @@ const TransformImageDialog = ({
                               <button
                                 type="button"
                                 role="switch"
-                                aria-checked={field.value ?? false}
-                                onClick={() => field.onChange(!field.value)}
+                                aria-checked={Boolean(field.value)}
+                                onClick={() => {
+                                  const next = !field.value;
+                                  field.onChange(next ? true : undefined);
+                                }}
                                 className={`inline-flex h-6 w-11 items-center rounded-full border transition-colors ${
                                   field.value
                                     ? "bg-primary border-primary"
