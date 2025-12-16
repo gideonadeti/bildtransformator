@@ -19,11 +19,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -33,6 +29,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import CustomDialogContent from "../custom-dialog-content";
 import CustomDialogFooter from "../custom-dialog-footer";
 
@@ -244,7 +247,7 @@ const TransformImageDialog = ({
                   {/* Resize Section */}
                   <AccordionItem value="resize">
                     <AccordionTrigger>Resize</AccordionTrigger>
-                    <AccordionContent className="space-y-3">
+                    <AccordionContent className="space-y-3 px-2">
                       <div className="grid grid-cols-2 gap-3">
                         <FormField
                           control={form.control}
@@ -302,18 +305,25 @@ const TransformImageDialog = ({
                           <FormItem>
                             <FormLabel>Fit Mode</FormLabel>
                             <FormControl>
-                              <select
-                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                {...field}
+                              <Select
+                                onValueChange={field.onChange}
                                 value={field.value ?? ""}
                               >
-                                <option value="">Select fit mode</option>
-                                <option value="contain">Contain</option>
-                                <option value="cover">Cover</option>
-                                <option value="fill">Fill</option>
-                                <option value="inside">Inside</option>
-                                <option value="outside">Outside</option>
-                              </select>
+                                <SelectTrigger className="w-full">
+                                  <SelectValue placeholder="Select fit mode" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="contain">
+                                    Contain
+                                  </SelectItem>
+                                  <SelectItem value="cover">Cover</SelectItem>
+                                  <SelectItem value="fill">Fill</SelectItem>
+                                  <SelectItem value="inside">Inside</SelectItem>
+                                  <SelectItem value="outside">
+                                    Outside
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -325,7 +335,7 @@ const TransformImageDialog = ({
                   {/* Crop Section */}
                   <AccordionItem value="crop">
                     <AccordionTrigger>Crop</AccordionTrigger>
-                    <AccordionContent className="space-y-3">
+                    <AccordionContent className="space-y-3 px-2">
                       <div className="grid grid-cols-2 gap-3">
                         <FormField
                           control={form.control}
@@ -450,7 +460,7 @@ const TransformImageDialog = ({
                   {/* Rotate Section */}
                   <AccordionItem value="rotate">
                     <AccordionTrigger>Rotate</AccordionTrigger>
-                    <AccordionContent className="space-y-3">
+                    <AccordionContent className="space-y-3 px-2">
                       <FormField
                         control={form.control}
                         name="rotate"
@@ -483,25 +493,41 @@ const TransformImageDialog = ({
                   {/* Grayscale Section */}
                   <AccordionItem value="grayscale">
                     <AccordionTrigger>Grayscale</AccordionTrigger>
-                    <AccordionContent className="space-y-3">
+                    <AccordionContent className="space-y-3 px-2">
                       <FormField
                         control={form.control}
                         name="grayscale"
                         render={({ field }) => (
-                          <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border px-3 py-2">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-sm font-medium">
+                                Convert to grayscale
+                              </FormLabel>
+                              <p className="text-xs text-muted-foreground">
+                                Toggle to apply a grayscale filter to the image.
+                              </p>
+                            </div>
                             <FormControl>
-                              <input
-                                type="checkbox"
-                                checked={field.value ?? false}
-                                onChange={(e) =>
-                                  field.onChange(e.target.checked)
-                                }
-                                className="h-4 w-4 rounded border-gray-300"
-                              />
+                              <button
+                                type="button"
+                                role="switch"
+                                aria-checked={field.value ?? false}
+                                onClick={() => field.onChange(!field.value)}
+                                className={`inline-flex h-6 w-11 items-center rounded-full border transition-colors ${
+                                  field.value
+                                    ? "bg-primary border-primary"
+                                    : "bg-input border-border"
+                                }`}
+                              >
+                                <span
+                                  className={`inline-block h-5 w-5 rounded-full bg-background shadow transition-transform ${
+                                    field.value
+                                      ? "translate-x-5"
+                                      : "translate-x-1"
+                                  }`}
+                                />
+                              </button>
                             </FormControl>
-                            <FormLabel className="mt-0!">
-                              Convert to grayscale
-                            </FormLabel>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -512,20 +538,38 @@ const TransformImageDialog = ({
                   {/* Tint Section */}
                   <AccordionItem value="tint">
                     <AccordionTrigger>Tint</AccordionTrigger>
-                    <AccordionContent className="space-y-3">
+                    <AccordionContent className="space-y-3 px-2">
                       <FormField
                         control={form.control}
                         name="tint"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>
-                              Color (hex, rgb, named color, etc.)
-                            </FormLabel>
+                            <FormLabel>Color</FormLabel>
                             <FormControl>
-                              <Input
-                                placeholder="e.g., red, #ffcc00, rgb(255, 204, 0)"
-                                {...field}
-                              />
+                              <div className="flex items-center gap-3">
+                                <Input
+                                  type="color"
+                                  className="h-10 w-14 p-1 cursor-pointer"
+                                  value={
+                                    /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(
+                                      field.value ?? ""
+                                    )
+                                      ? field.value ?? "#ffffff"
+                                      : "#ffffff"
+                                  }
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    field.onChange(value);
+                                  }}
+                                />
+                                <Input
+                                  placeholder="e.g., red, #ffcc00, rgb(255, 204, 0)"
+                                  value={field.value ?? ""}
+                                  onChange={(e) =>
+                                    field.onChange(e.target.value)
+                                  }
+                                />
+                              </div>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
