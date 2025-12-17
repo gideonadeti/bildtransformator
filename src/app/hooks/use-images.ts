@@ -63,12 +63,18 @@ const useImages = (options?: UseImagesOptions) => {
       socket.on(
         "image-transformation-completed",
         (transformedImage: TransformedImage) => {
-          queryClient.setQueryData(
-            ["transformed-images"],
-            (oldTransformedImages: TransformedImage[]) => [
-              transformedImage,
-              ...oldTransformedImages,
-            ]
+          queryClient.setQueryData(["images"], (oldImages: Image[]) =>
+            oldImages.map((image) =>
+              image.id === transformedImage.originalImageId
+                ? {
+                    ...image,
+                    transformedImages: [
+                      ...image.transformedImages,
+                      transformedImage,
+                    ],
+                  }
+                : image
+            )
           );
 
           toast.success("Image transformation completed", {
@@ -155,8 +161,7 @@ const useImages = (options?: UseImagesOptions) => {
       return deleteImage(id);
     },
     onError: (error) => {
-      const message =
-        error.response?.data?.message || "Failed to delete image";
+      const message = error.response?.data?.message || "Failed to delete image";
 
       toast.error(message, { id: "delete-image-error" });
     },

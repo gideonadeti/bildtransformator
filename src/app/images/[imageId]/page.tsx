@@ -5,7 +5,7 @@ import { ArrowLeft, Download, Trash2, Wand2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import DeleteImageDialog from "@/app/components/dialogs/delete-image-dialog";
@@ -49,6 +49,29 @@ const Page = () => {
 
   const transformedImages = image?.transformedImages || [];
   const transformedCount = transformedImages.length;
+
+  // Scroll to transformed image if hash is present
+  // biome-ignore lint/correctness/useExhaustiveDependencies: image is a necessary dependency to scroll to the transformed image if the hash is present
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.hash) {
+      const transformedImageId = window.location.hash.substring(1); // Remove the #
+      const element = document.getElementById(
+        `transformed-image-${transformedImageId}`
+      );
+
+      if (element) {
+        // Small delay to ensure DOM is ready
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
+          // Add a highlight effect
+          element.classList.add("ring-4", "ring-primary", "ring-offset-2");
+          setTimeout(() => {
+            element.classList.remove("ring-4", "ring-primary", "ring-offset-2");
+          }, 2000);
+        }, 100);
+      }
+    }
+  }, [image]);
 
   // Transformed images filtering and sorting
   const { filters, replaceFiltersInUrl } = useTransformedImagesUrlFilters();
@@ -297,7 +320,11 @@ const Page = () => {
                 <>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {displayedTransformedImages.map((transformedImage) => (
-                      <Card key={transformedImage.id}>
+                      <Card
+                        key={transformedImage.id}
+                        id={`transformed-image-${transformedImage.id}`}
+                        className="transition-all duration-300"
+                      >
                         <CardContent className="p-4">
                           <div className="relative aspect-video rounded-lg overflow-hidden border border-border mb-3">
                             <Image
