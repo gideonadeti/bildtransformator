@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
@@ -116,6 +117,7 @@ const setupGlobalListeners = (
 const useImages = (options?: UseImagesOptions) => {
   const socket = getSocketInstance();
   const queryClient = useQueryClient();
+  const router = useRouter();
   const { accessToken } = useAccessToken();
   const imagesQuery = useQuery<Image[], AxiosError<{ message: string }>>({
     queryKey: ["images"],
@@ -246,6 +248,12 @@ const useImages = (options?: UseImagesOptions) => {
       } else {
         toast.success("Image transformation already exists", {
           id: "transform-image-success",
+          action: {
+            label: "View",
+            onClick: () => {
+              router.push(`/images/${data.originalImageId}#${data.id}`);
+            },
+          },
         });
       }
     },
