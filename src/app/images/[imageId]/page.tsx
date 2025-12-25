@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { ArrowLeft, Code2, Download, Trash2, Wand2 } from "lucide-react";
+import { ArrowLeft, Download, Trash2, Wand2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -17,28 +17,18 @@ import {
   useTransformedImagesFilter,
 } from "@/app/hooks/use-transformed-images-filter";
 import { useTransformedImagesUrlFilters } from "@/app/hooks/use-transformed-images-url-filters";
+import TransformedImageCard from "@/app/images/components/transformed-image-card";
 import TransformedImagesToolbar from "@/app/images/components/transformed-images-toolbar";
 import { formatBytes } from "@/app/utils/format";
 import { downloadImage } from "@/app/utils/image-utils";
 import { Button } from "@/components/ui/button";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 const TRANSFORMED_IMAGES_PER_BATCH = 9;
 
@@ -330,70 +320,11 @@ const Page = () => {
                 <>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {displayedTransformedImages.map((transformedImage) => (
-                      <Card
+                      <TransformedImageCard
                         key={transformedImage.id}
-                        id={`transformed-image-${transformedImage.id}`}
-                        className="transition-all duration-300 relative"
-                      >
-                        <CardContent className="p-4">
-                          <div className="relative aspect-video rounded-lg overflow-hidden border border-border mb-3">
-                            <Image
-                              src={transformedImage.secureUrl}
-                              alt={`Transformed ${image.originalName}`}
-                              fill
-                              className="object-contain"
-                            />
-                          </div>
-                          <div className="space-y-1 text-sm">
-                            <div>
-                              <span className="font-medium">Size:</span>{" "}
-                              {formatBytes(transformedImage.size)}
-                            </div>
-                            <div>
-                              <span className="font-medium">Created:</span>{" "}
-                              {format(
-                                new Date(transformedImage.createdAt),
-                                "PPp"
-                              )}
-                            </div>
-                          </div>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="absolute right-2 bottom-2 z-10"
-                                  >
-                                    <Code2 />
-                                    <span className="sr-only">
-                                      View transformation
-                                    </span>
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>View transformation details</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-96" align="start">
-                              <div className="space-y-2">
-                                <h4 className="font-semibold text-sm">
-                                  Transformation Details
-                                </h4>
-                                <pre className="text-xs bg-muted p-3 rounded-md overflow-x-auto font-mono">
-                                  {JSON.stringify(
-                                    transformedImage.transformation,
-                                    null,
-                                    2
-                                  )}
-                                </pre>
-                              </div>
-                            </PopoverContent>
-                          </Popover>
-                        </CardContent>
-                      </Card>
+                        transformedImage={transformedImage}
+                        originalImageName={image.originalName}
+                      />
                     ))}
                   </div>
 
