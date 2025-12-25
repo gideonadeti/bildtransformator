@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { ArrowLeft, Download, Trash2, Wand2 } from "lucide-react";
+import { ArrowLeft, Code2, Download, Trash2, Wand2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -28,7 +28,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const TRANSFORMED_IMAGES_PER_BATCH = 9;
 
@@ -323,7 +333,7 @@ const Page = () => {
                       <Card
                         key={transformedImage.id}
                         id={`transformed-image-${transformedImage.id}`}
-                        className="transition-all duration-300"
+                        className="transition-all duration-300 relative"
                       >
                         <CardContent className="p-4">
                           <div className="relative aspect-video rounded-lg overflow-hidden border border-border mb-3">
@@ -347,6 +357,41 @@ const Page = () => {
                               )}
                             </div>
                           </div>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="absolute right-2 bottom-2 z-10"
+                                  >
+                                    <Code2 />
+                                    <span className="sr-only">
+                                      View transformation
+                                    </span>
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>View transformation details</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-96" align="start">
+                              <div className="space-y-2">
+                                <h4 className="font-semibold text-sm">
+                                  Transformation Details
+                                </h4>
+                                <pre className="text-xs bg-muted p-3 rounded-md overflow-x-auto font-mono">
+                                  {JSON.stringify(
+                                    transformedImage.transformation,
+                                    null,
+                                    2
+                                  )}
+                                </pre>
+                              </div>
+                            </PopoverContent>
+                          </Popover>
                         </CardContent>
                       </Card>
                     ))}
