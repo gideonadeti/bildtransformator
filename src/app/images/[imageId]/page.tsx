@@ -277,13 +277,6 @@ const Page = () => {
 
           {/* Action buttons */}
           <div className="flex flex-wrap gap-2">
-            <Button
-              variant="destructive"
-              onClick={() => setIsDeleteDialogOpen(true)}
-            >
-              <Trash2 className="mr-2 size-4" />
-              Delete
-            </Button>
             <Button variant="outline" onClick={handleTransform}>
               <Wand2 className="mr-2 size-4" />
               Transform
@@ -291,6 +284,13 @@ const Page = () => {
             <Button variant="outline" onClick={handleDownload}>
               <Download className="mr-2 size-4" />
               Download
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => setIsDeleteDialogOpen(true)}
+            >
+              <Trash2 className="mr-2 size-4" />
+              Delete
             </Button>
           </div>
 
