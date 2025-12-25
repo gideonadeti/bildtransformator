@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { toast } from "sonner";
 
 import getSocketInstance from "../libs/socket-instance";
@@ -18,10 +18,6 @@ import {
   uploadImage,
 } from "../utils/general-query-functions";
 import useAccessToken from "./use-access-token";
-
-interface UseImagesOptions {
-  onTransformationComplete?: (transformedImage: TransformedImage) => void;
-}
 
 // Global listener manager to prevent duplicate socket listeners
 type TransformationCallback = (transformedImage: TransformedImage) => void;
@@ -114,7 +110,7 @@ const setupGlobalListeners = (
   socket.on("image-transformation-failed", globalFailedHandler);
 };
 
-const useImages = (options?: UseImagesOptions) => {
+const useImages = () => {
   const socket = getSocketInstance();
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -155,13 +151,6 @@ const useImages = (options?: UseImagesOptions) => {
     transformedImagesQuery.isError,
   ]);
 
-  // Store stable reference to callback to avoid re-registering callbacks
-  const onTransformationCompleteRef = useRef(options?.onTransformationComplete);
-
-  useEffect(() => {
-    onTransformationCompleteRef.current = options?.onTransformationComplete;
-  }, [options?.onTransformationComplete]);
-
   useEffect(() => {
     if (!socket) return;
 
@@ -175,7 +164,9 @@ const useImages = (options?: UseImagesOptions) => {
         action: {
           label: "View",
           onClick: () => {
-            onTransformationCompleteRef.current?.(transformedImage);
+            router.push(
+              `/images/${transformedImage.originalImageId}#${transformedImage.id}`
+            );
           },
         },
       });
@@ -192,7 +183,7 @@ const useImages = (options?: UseImagesOptions) => {
       transformationCallbacks.delete(handleTransformationCompleted);
       transformationFailedCallbacks.delete(handleTransformationFailed);
     };
-  }, [socket, queryClient]);
+  }, [socket, queryClient, router]);
 
   const uploadImageMutation = useMutation<
     Image,

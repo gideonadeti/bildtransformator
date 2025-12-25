@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -15,21 +14,14 @@ import {
 } from "../hooks/use-images-filter";
 import { useImagesUrlFilters } from "../hooks/use-images-url-filters";
 import { usePagination } from "../hooks/use-pagination";
-import type { Image as ImageType, TransformedImage } from "../types/general";
+import type { Image as ImageType } from "../types/general";
 import ImageCard from "./components/image-card";
 import ImagesToolbar from "./components/images-toolbar";
 
 const IMAGES_PER_BATCH = 9;
 
 const Page = () => {
-  const router = useRouter();
-  const { imagesQuery, deleteImageMutation } = useImages({
-    onTransformationComplete: (transformedImage: TransformedImage) => {
-      router.push(
-        `/images/${transformedImage.originalImageId}#${transformedImage.id}`
-      );
-    },
-  });
+  const { imagesQuery, deleteImageMutation } = useImages();
   const images = imagesQuery.data || [];
   const [isUploadImageDialogOpen, setIsUploadImageDialogOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<ImageType | null>(null);
