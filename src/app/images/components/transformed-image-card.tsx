@@ -51,9 +51,9 @@ const TransformedImageCard = ({
             {format(new Date(transformedImage.createdAt), "PPp")}
           </div>
         </div>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Tooltip>
+        <Tooltip>
+          <Popover>
+            <PopoverTrigger asChild>
               <TooltipTrigger asChild>
                 <Button
                   variant="outline"
@@ -64,20 +64,22 @@ const TransformedImageCard = ({
                   <span className="sr-only">View transformation</span>
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>
-                <p>View transformation details</p>
-              </TooltipContent>
-            </Tooltip>
-          </PopoverTrigger>
-          <PopoverContent className="w-96" align="start">
-            <div className="space-y-2">
-              <h4 className="font-semibold text-sm">Transformation Details</h4>
-              <pre className="text-xs bg-muted p-3 rounded-md overflow-x-auto font-mono">
-                {JSON.stringify(transformedImage.transformation, null, 2)}
-              </pre>
-            </div>
-          </PopoverContent>
-        </Popover>
+            </PopoverTrigger>
+            <PopoverContent className="w-96" align="start">
+              <div className="space-y-2">
+                <h4 className="font-semibold text-sm">
+                  Transformation Details
+                </h4>
+                <pre className="text-xs bg-muted p-3 rounded-md overflow-x-auto font-mono">
+                  {JSON.stringify(transformedImage.transformation, null, 2)}
+                </pre>
+              </div>
+            </PopoverContent>
+          </Popover>
+          <TooltipContent>
+            <p>View transformation details</p>
+          </TooltipContent>
+        </Tooltip>
       </CardContent>
     </Card>
   );
