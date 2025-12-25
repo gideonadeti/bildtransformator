@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 import getSocketInstance from "../libs/socket-instance";
@@ -21,6 +21,97 @@ import useAccessToken from "./use-access-token";
 interface UseImagesOptions {
   onTransformationComplete?: (transformedImage: TransformedImage) => void;
 }
+
+// Global listener manager to prevent duplicate socket listeners
+type TransformationCallback = (transformedImage: TransformedImage) => void;
+type TransformationFailedCallback = (error: { message: string }) => void;
+
+const transformationCallbacks = new Set<TransformationCallback>();
+const transformationFailedCallbacks = new Set<TransformationFailedCallback>();
+let currentSocketInstance: ReturnType<typeof getSocketInstance> | null = null;
+let globalQueryClient: ReturnType<typeof useQueryClient> | null = null;
+let globalCompletedHandler:
+  | ((transformedImage: TransformedImage) => void)
+  | null = null;
+let globalFailedHandler: ((error: { message: string }) => void) | null = null;
+
+const setupGlobalListeners = (
+  socket: ReturnType<typeof getSocketInstance>,
+  queryClient: ReturnType<typeof useQueryClient>
+) => {
+  if (!socket) return;
+
+  // Update global queryClient reference
+  globalQueryClient = queryClient;
+
+  // If socket instance changed, reset and re-register
+  if (currentSocketInstance !== socket) {
+    // Remove old listeners if socket changed
+    if (
+      currentSocketInstance &&
+      globalCompletedHandler &&
+      globalFailedHandler
+    ) {
+      currentSocketInstance.off(
+        "image-transformation-completed",
+        globalCompletedHandler
+      );
+      currentSocketInstance.off(
+        "image-transformation-failed",
+        globalFailedHandler
+      );
+    }
+    currentSocketInstance = socket;
+    globalCompletedHandler = null;
+    globalFailedHandler = null;
+  }
+
+  // Only register if not already registered
+  if (globalCompletedHandler && globalFailedHandler) {
+    return;
+  }
+
+  globalCompletedHandler = (transformedImage: TransformedImage) => {
+    // Update query cache once (only one listener ensures this runs once)
+    if (globalQueryClient) {
+      globalQueryClient.setQueryData(["images"], (oldImages: Image[]) =>
+        oldImages.map((image) =>
+          image.id === transformedImage.originalImageId
+            ? {
+                ...image,
+                transformedImages: [
+                  ...image.transformedImages,
+                  transformedImage,
+                ],
+              }
+            : image
+        )
+      );
+    }
+
+    // Notify all component callbacks for UI updates
+    transformationCallbacks.forEach((callback) => {
+      try {
+        callback(transformedImage);
+      } catch (error) {
+        console.error("Error in transformation callback:", error);
+      }
+    });
+  };
+
+  globalFailedHandler = (error: { message: string }) => {
+    transformationFailedCallbacks.forEach((callback) => {
+      try {
+        callback(error);
+      } catch (error) {
+        console.error("Error in transformation failed callback:", error);
+      }
+    });
+  };
+
+  socket.on("image-transformation-completed", globalCompletedHandler);
+  socket.on("image-transformation-failed", globalFailedHandler);
+};
 
 const useImages = (options?: UseImagesOptions) => {
   const socket = getSocketInstance();
@@ -62,58 +153,44 @@ const useImages = (options?: UseImagesOptions) => {
     transformedImagesQuery.isError,
   ]);
 
+  // Store stable reference to callback to avoid re-registering callbacks
+  const onTransformationCompleteRef = useRef(options?.onTransformationComplete);
+
   useEffect(() => {
-    if (socket) {
-      const handleTransformationCompleted = (
-        transformedImage: TransformedImage
-      ) => {
-        queryClient.setQueryData(["images"], (oldImages: Image[]) =>
-          oldImages.map((image) =>
-            image.id === transformedImage.originalImageId
-              ? {
-                  ...image,
-                  transformedImages: [
-                    ...image.transformedImages,
-                    transformedImage,
-                  ],
-                }
-              : image
-          )
-        );
+    onTransformationCompleteRef.current = options?.onTransformationComplete;
+  }, [options?.onTransformationComplete]);
 
-        toast.success("Image transformation completed", {
-          id: "image-transformation-completed",
-          action: {
-            label: "View",
-            onClick: () => {
-              options?.onTransformationComplete?.(transformedImage);
-            },
+  useEffect(() => {
+    if (!socket) return;
+
+    setupGlobalListeners(socket, queryClient);
+
+    const handleTransformationCompleted = (
+      transformedImage: TransformedImage
+    ) => {
+      toast.success("Image transformation completed", {
+        id: "image-transformation-completed",
+        action: {
+          label: "View",
+          onClick: () => {
+            onTransformationCompleteRef.current?.(transformedImage);
           },
-        });
-      };
+        },
+      });
+    };
 
-      const handleTransformationFailed = (error: { message: string }) => {
-        toast.error(error.message, { id: "image-transformation-failed" });
-      };
+    const handleTransformationFailed = (error: { message: string }) => {
+      toast.error(error.message, { id: "image-transformation-failed" });
+    };
 
-      socket.on(
-        "image-transformation-completed",
-        handleTransformationCompleted
-      );
+    transformationCallbacks.add(handleTransformationCompleted);
+    transformationFailedCallbacks.add(handleTransformationFailed);
 
-      socket.on("image-transformation-failed", handleTransformationFailed);
-
-      // Cleanup function to remove listeners when component unmounts
-      return () => {
-        socket.off(
-          "image-transformation-completed",
-          handleTransformationCompleted
-        );
-
-        socket.off("image-transformation-failed", handleTransformationFailed);
-      };
-    }
-  }, [socket, queryClient, options?.onTransformationComplete]);
+    return () => {
+      transformationCallbacks.delete(handleTransformationCompleted);
+      transformationFailedCallbacks.delete(handleTransformationFailed);
+    };
+  }, [socket, queryClient]);
 
   const uploadImageMutation = useMutation<
     Image,
