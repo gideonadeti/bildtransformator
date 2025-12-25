@@ -16,6 +16,7 @@ import {
   transformImage,
   uploadImage,
 } from "../utils/general-query-functions";
+import useAccessToken from "./use-access-token";
 
 interface UseImagesOptions {
   onTransformationComplete?: (transformedImage: TransformedImage) => void;
@@ -24,9 +25,11 @@ interface UseImagesOptions {
 const useImages = (options?: UseImagesOptions) => {
   const socket = getSocketInstance();
   const queryClient = useQueryClient();
+  const { accessToken } = useAccessToken();
   const imagesQuery = useQuery<Image[], AxiosError<{ message: string }>>({
     queryKey: ["images"],
     queryFn: async () => await fetchImages(),
+    enabled: !!accessToken,
   });
 
   const transformedImagesQuery = useQuery<
@@ -35,6 +38,7 @@ const useImages = (options?: UseImagesOptions) => {
   >({
     queryKey: ["transformed-images"],
     queryFn: async () => await fetchTransformedImages(),
+    enabled: !!accessToken,
   });
 
   useEffect(() => {
@@ -60,40 +64,56 @@ const useImages = (options?: UseImagesOptions) => {
 
   useEffect(() => {
     if (socket) {
+      const handleTransformationCompleted = (
+        transformedImage: TransformedImage
+      ) => {
+        queryClient.setQueryData(["images"], (oldImages: Image[]) =>
+          oldImages.map((image) =>
+            image.id === transformedImage.originalImageId
+              ? {
+                  ...image,
+                  transformedImages: [
+                    ...image.transformedImages,
+                    transformedImage,
+                  ],
+                }
+              : image
+          )
+        );
+
+        toast.success("Image transformation completed", {
+          id: "image-transformation-completed",
+          action: {
+            label: "View",
+            onClick: () => {
+              options?.onTransformationComplete?.(transformedImage);
+            },
+          },
+        });
+      };
+
+      const handleTransformationFailed = (error: { message: string }) => {
+        toast.error(error.message, { id: "image-transformation-failed" });
+      };
+
       socket.on(
         "image-transformation-completed",
-        (transformedImage: TransformedImage) => {
-          queryClient.setQueryData(["images"], (oldImages: Image[]) =>
-            oldImages.map((image) =>
-              image.id === transformedImage.originalImageId
-                ? {
-                    ...image,
-                    transformedImages: [
-                      ...image.transformedImages,
-                      transformedImage,
-                    ],
-                  }
-                : image
-            )
-          );
-
-          toast.success("Image transformation completed", {
-            id: "image-transformation-completed",
-            action: {
-              label: "View",
-              onClick: () => {
-                options?.onTransformationComplete?.(transformedImage);
-              },
-            },
-          });
-        }
+        handleTransformationCompleted
       );
 
-      socket.on("image-transformation-failed", (error: { message: string }) => {
-        toast.error(error.message, { id: "image-transformation-failed" });
-      });
+      socket.on("image-transformation-failed", handleTransformationFailed);
+
+      // Cleanup function to remove listeners when component unmounts
+      return () => {
+        socket.off(
+          "image-transformation-completed",
+          handleTransformationCompleted
+        );
+
+        socket.off("image-transformation-failed", handleTransformationFailed);
+      };
     }
-  }, [socket, queryClient.setQueryData, options?.onTransformationComplete]);
+  }, [socket, queryClient, options?.onTransformationComplete]);
 
   const uploadImageMutation = useMutation<
     Image,
