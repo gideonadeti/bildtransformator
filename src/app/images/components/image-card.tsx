@@ -88,7 +88,7 @@ const ImageCard = ({
         <div className="flex items-center justify-center gap-2">
           <Button variant="outline" size="icon" asChild title="View">
             <Link href={`/images/${image.id}`}>
-              <Eye className="size-4" />
+              <Eye />
               <span className="sr-only">View</span>
             </Link>
           </Button>
@@ -98,7 +98,7 @@ const ImageCard = ({
             onClick={onTransformClick}
             title="Transform"
           >
-            <Wand2 className="size-4" />
+            <Wand2 />
             <span className="sr-only">Transform</span>
           </Button>
           <Button
@@ -107,7 +107,7 @@ const ImageCard = ({
             onClick={handleDownload}
             title="Download"
           >
-            <Download className="size-4" />
+            <Download />
             <span className="sr-only">Download</span>
           </Button>
           <Button
@@ -116,7 +116,7 @@ const ImageCard = ({
             onClick={onDeleteClick}
             title="Delete"
           >
-            <Trash2 className="size-4" />
+            <Trash2 />
             <span className="sr-only">Delete</span>
           </Button>
         </div>
