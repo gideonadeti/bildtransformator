@@ -232,19 +232,19 @@ const useImages = () => {
     onSuccess: (data, { onOpenChange }) => {
       onOpenChange(false);
 
-      if ("jobId" in data) {
-        toast.success("Image transformation started", {
-          id: "transform-image-success",
-        });
-      } else {
+      if ("id" in data && "originalImageId" in data) {
         toast.success("Image transformation already exists", {
-          id: "transform-image-success",
+          id: "transform-image-already-exists",
           action: {
             label: "View",
             onClick: () => {
               router.push(`/images/${data.originalImageId}#${data.id}`);
             },
           },
+        });
+      } else {
+        toast.success("Image transformation started", {
+          id: "transform-image-started",
         });
       }
     },
