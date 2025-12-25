@@ -219,7 +219,7 @@ const useImages = (options?: UseImagesOptions) => {
   });
 
   const transformImageMutation = useMutation<
-    { jobId: string },
+    { jobId: string } | TransformedImage,
     AxiosError<{ message: string }>,
     {
       id: string;
@@ -236,12 +236,18 @@ const useImages = (options?: UseImagesOptions) => {
 
       toast.error(message, { id: "transform-image-error" });
     },
-    onSuccess: (_, { onOpenChange }) => {
+    onSuccess: (data, { onOpenChange }) => {
       onOpenChange(false);
 
-      toast.success("Image transformation started", {
-        id: "transform-image-success",
-      });
+      if ("jobId" in data) {
+        toast.success("Image transformation started", {
+          id: "transform-image-success",
+        });
+      } else {
+        toast.success("Image transformation already exists", {
+          id: "transform-image-success",
+        });
+      }
     },
   });
 
