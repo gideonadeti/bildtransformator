@@ -180,23 +180,64 @@ const Page = () => {
       <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <div className="space-y-6">
           {/* Back button skeleton */}
-          <Skeleton className="h-9 w-24" />
+          <Skeleton className="h-9 w-32" />
 
-          {/* Image skeleton */}
+          {/* Main image skeleton */}
           <Skeleton className="aspect-video w-full rounded-lg" />
 
-          {/* Info skeleton */}
-          <div className="space-y-4">
-            <Skeleton className="h-8 w-64" />
-            <Skeleton className="h-4 w-48" />
-            <Skeleton className="h-4 w-32" />
+          {/* Image information card skeleton */}
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-7 w-64 mb-2" />
+              <div className="space-y-2">
+                <div className="flex flex-wrap gap-4">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-40" />
+                </div>
+                <Skeleton className="h-4 w-48" />
+              </div>
+            </CardHeader>
+          </Card>
+
+          {/* Action buttons skeleton */}
+          <div className="flex flex-wrap gap-2">
+            <Skeleton className="h-9 w-28" />
+            <Skeleton className="h-9 w-32" />
+            <Skeleton className="h-9 w-28" />
           </div>
 
-          {/* Actions skeleton */}
-          <div className="flex gap-2">
-            <Skeleton className="h-9 w-24" />
-            <Skeleton className="h-9 w-24" />
-            <Skeleton className="h-9 w-24" />
+          {/* Transformed images section skeleton */}
+          <div className="space-y-4">
+            {/* Heading skeleton */}
+            <Skeleton className="h-8 w-64" />
+
+            {/* Toolbar skeleton */}
+            <div className="space-y-4">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
+                {/* Size filter skeleton */}
+                <div className="w-full lg:w-auto space-y-1">
+                  <Skeleton className="h-4 w-20" />
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <Skeleton className="h-9 w-[160px]" />
+                    <Skeleton className="h-9 w-[160px]" />
+                  </div>
+                </div>
+
+                {/* Sort skeleton */}
+                <div className="w-full sm:w-[260px] space-y-1">
+                  <Skeleton className="h-4 w-12" />
+                  <Skeleton className="h-9 w-full" />
+                </div>
+              </div>
+            </div>
+
+            {/* Grid skeleton */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i.toString()} className="h-[280px] w-full" />
+              ))}
+            </div>
           </div>
         </div>
       </div>
