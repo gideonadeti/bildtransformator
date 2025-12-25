@@ -86,39 +86,52 @@ const ImageCard = ({
           />
         </div>
         <div className="flex items-center justify-center gap-2">
-          <Button variant="outline" size="icon" asChild title="View">
-            <Link href={`/images/${image.id}`}>
-              <Eye />
-              <span className="sr-only">View</span>
-            </Link>
-          </Button>
-          <Button
-            variant="default"
-            size="icon"
-            onClick={onTransformClick}
-            title="Transform"
-          >
-            <Wand2 />
-            <span className="sr-only">Transform</span>
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handleDownload}
-            title="Download"
-          >
-            <Download />
-            <span className="sr-only">Download</span>
-          </Button>
-          <Button
-            variant="destructive"
-            size="icon"
-            onClick={onDeleteClick}
-            title="Delete"
-          >
-            <Trash2 />
-            <span className="sr-only">Delete</span>
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" size="icon" asChild>
+                <Link href={`/images/${image.id}`}>
+                  <Eye />
+                  <span className="sr-only">View</span>
+                </Link>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>View</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="default" size="icon" onClick={onTransformClick}>
+                <Wand2 />
+                <span className="sr-only">Transform</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Transform</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" size="icon" onClick={handleDownload}>
+                <Download />
+                <span className="sr-only">Download</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Download</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="destructive" size="icon" onClick={onDeleteClick}>
+                <Trash2 />
+                <span className="sr-only">Delete</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Delete</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
       </CardContent>
     </Card>
