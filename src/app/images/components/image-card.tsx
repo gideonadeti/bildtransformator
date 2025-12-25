@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,6 +13,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import type { Image as ImageType } from "../../types/general";
 import { formatBytes } from "../../utils/format";
@@ -43,7 +49,22 @@ const ImageCard = ({
   const formatDisplay = image.format?.toUpperCase() || "N/A";
 
   return (
-    <Card>
+    <Card className="relative">
+      {transformedCount > 0 && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge variant="default" className="absolute right-2 top-2 z-10">
+              {transformedCount}
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>
+              {transformedCount} transformed image
+              {transformedCount !== 1 ? "s" : ""}
+            </p>
+          </TooltipContent>
+        </Tooltip>
+      )}
       <CardHeader>
         <CardTitle className="truncate">{image.originalName}</CardTitle>
         <CardDescription className="space-y-0.5">
@@ -53,12 +74,6 @@ const ImageCard = ({
           <span className="block text-xs">
             Uploaded on {format(new Date(image.createdAt), "PPp")}
           </span>
-          {transformedCount > 0 && (
-            <span className="block text-xs">
-              {transformedCount} transformed image
-              {transformedCount !== 1 ? "s" : ""}
-            </span>
-          )}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
