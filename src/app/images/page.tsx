@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -25,7 +25,9 @@ const Page = () => {
   const router = useRouter();
   const { imagesQuery, deleteImageMutation } = useImages({
     onTransformationComplete: (transformedImage: TransformedImage) => {
-      router.push(`/images/${transformedImage.originalImageId}#${transformedImage.id}`);
+      router.push(
+        `/images/${transformedImage.originalImageId}#${transformedImage.id}`
+      );
     },
   });
   const images = imagesQuery.data || [];
