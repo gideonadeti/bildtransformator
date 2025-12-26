@@ -7,11 +7,9 @@ import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 
 import useImages from "@/app/hooks/use-images";
+import useTransformedImage from "@/app/hooks/use-transformed-image";
 import { transformImageFormSchema } from "@/app/libs/form-schemas/general-form-schemas";
-import type {
-  Image as ImageType,
-  TransformImageFormValues,
-} from "@/app/types/general";
+import type { TransformImageFormValues } from "@/app/types/general";
 import {
   Accordion,
   AccordionContent,
@@ -41,16 +39,29 @@ import CustomDialogFooter from "../custom-dialog-footer";
 
 interface TransformImageDialogProps {
   open: boolean;
+  image: {
+    id: string;
+    secureUrl: string;
+    originalName: string;
+  } | null;
+  isTransformedImage?: boolean;
   onOpenChange: (open: boolean) => void;
-  image: ImageType | null;
 }
 
 const TransformImageDialog = ({
   open,
-  onOpenChange,
   image,
+  isTransformedImage = false,
+  onOpenChange,
 }: TransformImageDialogProps) => {
   const { transformImageMutation } = useImages();
+  const { transformTransformedImageMutation } = useTransformedImage(
+    isTransformedImage && image?.id ? image.id : ""
+  );
+
+  const isPending =
+    transformTransformedImageMutation.isPending ||
+    transformImageMutation.isPending;
 
   const form = useForm<TransformImageFormValues>({
     resolver: zodResolver(transformImageFormSchema),
@@ -171,11 +182,19 @@ const TransformImageDialog = ({
       cleanedData.tint = formValues.tint;
     }
 
-    transformImageMutation.mutate({
-      id: image.id,
-      formValues: cleanedData,
-      onOpenChange,
-    });
+    if (isTransformedImage) {
+      transformTransformedImageMutation.mutate({
+        id: image.id,
+        formValues: cleanedData,
+        onOpenChange,
+      });
+    } else {
+      transformImageMutation.mutate({
+        id: image.id,
+        formValues: cleanedData,
+        onOpenChange,
+      });
+    }
   };
 
   const moveOrderItem = (index: number, direction: "up" | "down") => {
@@ -780,7 +799,7 @@ const TransformImageDialog = ({
             normalText="Transform"
             pendingText="Transforming..."
             disabled={!form.formState.isDirty || enabledTransforms.length === 0}
-            isPending={transformImageMutation.isPending}
+            isPending={isPending}
             handleCancel={() => onOpenChange(false)}
             handleSubmit={form.handleSubmit(onSubmit)}
           />
