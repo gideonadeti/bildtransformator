@@ -56,7 +56,7 @@ const TransformedImageCard = ({
       id={`transformed-image-${transformedImage.id}`}
       className="transition-all duration-300 relative"
     >
-      <CardContent className="p-4">
+      <CardContent className="p-4 pt-0 space-y-4">
         <div className="relative aspect-video rounded-lg overflow-hidden border border-border mb-3">
           <Image
             src={transformedImage.secureUrl}
