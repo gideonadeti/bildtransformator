@@ -30,4 +30,5 @@ export interface TransformedImage {
   updatedAt: string;
 
   transformation: TransformImageFormValues;
+  transformedTransformedImages: TransformedImage[];
 }
