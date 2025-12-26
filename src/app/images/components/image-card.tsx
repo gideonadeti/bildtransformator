@@ -37,6 +37,10 @@ const ImageCard = ({
   const handleDownload = async () => {
     try {
       await downloadImage(image.secureUrl, image.originalName);
+
+      toast.success("Image downloaded successfully", {
+        id: `download-success-${image.id}`,
+      });
     } catch (error) {
       console.error("Failed to download image:", error);
       toast.error("Failed to download image", {
