@@ -13,7 +13,6 @@ import type {
 import {
   deleteImage,
   fetchImages,
-  fetchTransformedImages,
   transformImage,
   uploadImage,
 } from "../utils/general-query-functions";
@@ -121,15 +120,6 @@ const useImages = () => {
     enabled: !!accessToken,
   });
 
-  const transformedImagesQuery = useQuery<
-    TransformedImage[],
-    AxiosError<{ message: string }>
-  >({
-    queryKey: ["transformed-images"],
-    queryFn: async () => await fetchTransformedImages(),
-    enabled: !!accessToken,
-  });
-
   useEffect(() => {
     if (imagesQuery.isError) {
       const message =
@@ -138,18 +128,6 @@ const useImages = () => {
       toast.error(message, { id: "fetch-images-error" });
     }
   }, [imagesQuery.error?.response?.data, imagesQuery.isError]);
-
-  useEffect(() => {
-    if (transformedImagesQuery.isError) {
-      const message =
-        transformedImagesQuery.error?.response?.data?.message ||
-        "Failed to fetch transformed images";
-      toast.error(message, { id: "fetch-transformed-images-error" });
-    }
-  }, [
-    transformedImagesQuery.error?.response?.data,
-    transformedImagesQuery.isError,
-  ]);
 
   useEffect(() => {
     if (!socket) return;
@@ -294,7 +272,6 @@ const useImages = () => {
 
   return {
     imagesQuery,
-    transformedImagesQuery,
     uploadImageMutation,
     transformImageMutation,
     deleteImageMutation,
