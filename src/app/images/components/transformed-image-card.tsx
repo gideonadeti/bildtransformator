@@ -1,6 +1,7 @@
 import { format } from "date-fns";
-import { Code2 } from "lucide-react";
+import { Code2, Eye } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -51,35 +52,46 @@ const TransformedImageCard = ({
             {format(new Date(transformedImage.createdAt), "PPp")}
           </div>
         </div>
-        <Tooltip>
-          <Popover>
-            <PopoverTrigger asChild>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="absolute right-2 bottom-2 z-10"
-                >
-                  <Code2 />
-                  <span className="sr-only">View transformation</span>
-                </Button>
-              </TooltipTrigger>
-            </PopoverTrigger>
-            <PopoverContent className="w-96" align="start">
-              <div className="space-y-2">
-                <h4 className="font-semibold text-sm">
-                  Transformation Details
-                </h4>
-                <pre className="text-xs bg-muted p-3 rounded-md overflow-x-auto font-mono">
-                  {JSON.stringify(transformedImage.transformation, null, 2)}
-                </pre>
-              </div>
-            </PopoverContent>
-          </Popover>
-          <TooltipContent>
-            <p>View transformation details</p>
-          </TooltipContent>
-        </Tooltip>
+        <div className="absolute right-2 bottom-2 z-10 flex gap-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" size="icon" asChild>
+                <Link href={`/transformed-images/${transformedImage.id}`}>
+                  <Eye />
+                  <span className="sr-only">View transformed image</span>
+                </Link>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>View transformed image</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <Popover>
+              <PopoverTrigger asChild>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="icon">
+                    <Code2 />
+                    <span className="sr-only">View transformation</span>
+                  </Button>
+                </TooltipTrigger>
+              </PopoverTrigger>
+              <PopoverContent className="w-96" align="start">
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-sm">
+                    Transformation Details
+                  </h4>
+                  <pre className="text-xs bg-muted p-3 rounded-md overflow-x-auto font-mono">
+                    {JSON.stringify(transformedImage.transformation, null, 2)}
+                  </pre>
+                </div>
+              </PopoverContent>
+            </Popover>
+            <TooltipContent>
+              <p>View transformation details</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </CardContent>
     </Card>
   );
