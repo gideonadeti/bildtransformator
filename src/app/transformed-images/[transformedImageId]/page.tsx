@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { ArrowLeft, Download } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
@@ -22,6 +22,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const Page = () => {
   const params = useParams<{ transformedImageId: string }>();
+  const router = useRouter();
   const transformedImageId = params.transformedImageId;
   const { transformedImageQuery } = useTransformedImage(transformedImageId);
 
@@ -81,8 +82,11 @@ const Page = () => {
     return (
       <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <div className="space-y-6">
-          {/* Back button skeleton */}
-          <Skeleton className="h-9 w-32" />
+          {/* Back buttons skeleton */}
+          <div className="flex gap-2">
+            <Skeleton className="h-9 w-20" />
+            <Skeleton className="h-9 w-36" />
+          </div>
 
           {/* Main image skeleton */}
           <Skeleton className="aspect-video w-full rounded-lg" />
@@ -116,12 +120,18 @@ const Page = () => {
     return (
       <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <div className="space-y-4">
-          <Button variant="outline" asChild>
-            <Link href="/images">
-              <ArrowLeft className="mr-2 size-4" />
-              Back to Images
-            </Link>
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => router.back()}>
+              <ArrowLeft />
+              Back
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/images">
+                <ArrowLeft />
+                Back to Images
+              </Link>
+            </Button>
+          </div>
           <div className="py-12 text-center">
             <h1 className="text-2xl font-bold mb-2">
               Transformed Image Not Found
@@ -138,13 +148,19 @@ const Page = () => {
   return (
     <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
       <div className="space-y-6">
-        {/* Back button */}
-        <Button variant="outline" asChild>
-          <Link href="/images">
-            <ArrowLeft className="mr-2 size-4" />
-            Back to Images
-          </Link>
-        </Button>
+        {/* Back buttons */}
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => router.back()}>
+            <ArrowLeft />
+            Back
+          </Button>
+          <Button variant="outline" asChild>
+            <Link href="/images">
+              <ArrowLeft />
+              Back to Images
+            </Link>
+          </Button>
+        </div>
 
         {/* Main image */}
         <div className="relative aspect-video w-full rounded-lg overflow-hidden border border-border bg-muted">

@@ -403,9 +403,7 @@ const Page = () => {
       {/* Transform dialog */}
       <TransformImageDialog
         open={isTransformDialogOpen}
-        onOpenChange={(open) => {
-          setIsTransformDialogOpen(open);
-        }}
+        onOpenChange={setIsTransformDialogOpen}
         image={image}
       />
     </>
