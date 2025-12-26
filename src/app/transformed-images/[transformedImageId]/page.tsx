@@ -206,6 +206,10 @@ const Page = () => {
                 <div className="flex flex-wrap gap-4">
                   <Skeleton className="h-4 w-48" />
                 </div>
+                <div className="flex flex-wrap gap-4">
+                  <Skeleton className="h-4 w-36" />
+                  <Skeleton className="h-4 w-32" />
+                </div>
               </div>
             </CardHeader>
           </Card>
@@ -332,6 +336,28 @@ const Page = () => {
                   <span className="font-medium">Transformed on:</span>{" "}
                   {format(new Date(transformedImage.createdAt), "PPp")}
                 </span>
+              </div>
+              <div className="flex flex-wrap gap-4 text-sm">
+                <span>
+                  <span className="font-medium">Original Image:</span>{" "}
+                  <Link
+                    href={`/images/${transformedImage.originalImageId}`}
+                    className="text-primary hover:underline"
+                  >
+                    View Original
+                  </Link>
+                </span>
+                {transformedImage.parentId && (
+                  <span>
+                    <span className="font-medium">Parent Image:</span>{" "}
+                    <Link
+                      href={`/transformed-images/${transformedImage.parentId}`}
+                      className="text-primary hover:underline"
+                    >
+                      View Parent
+                    </Link>
+                  </span>
+                )}
               </div>
             </CardDescription>
           </CardHeader>
