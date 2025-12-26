@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft, Code2, Download } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -18,6 +18,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const Page = () => {
@@ -110,6 +115,7 @@ const Page = () => {
           {/* Action buttons skeleton */}
           <div className="flex flex-wrap gap-2">
             <Skeleton className="h-9 w-28" />
+            <Skeleton className="h-9 w-40" />
           </div>
         </div>
       </div>
@@ -204,6 +210,24 @@ const Page = () => {
             <Download />
             Download
           </Button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline">
+                <Code2 />
+                View Transformation
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-96" align="start">
+              <div className="space-y-2">
+                <h4 className="font-semibold text-sm">
+                  Transformation Details
+                </h4>
+                <pre className="text-xs bg-muted p-3 rounded-md overflow-x-auto font-mono max-h-[400px] overflow-y-auto">
+                  {JSON.stringify(transformedImage.transformation, null, 2)}
+                </pre>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
     </div>
