@@ -40,6 +40,18 @@ export const fetchTransformedImages = async () => {
   }
 };
 
+export const fetchTransformedImage = async (id: string) => {
+  try {
+    const response = await axios.get(`/transformed-images/${id}`);
+
+    return response.data;
+  } catch (error) {
+    console.error("Error from `fetchTransformedImage`:", error);
+
+    throw error;
+  }
+};
+
 export const transformImage = async (
   id: string,
   formValues: TransformImageFormValues
