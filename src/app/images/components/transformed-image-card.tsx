@@ -1,9 +1,10 @@
 import { format } from "date-fns";
-import { Code2, Download, Eye } from "lucide-react";
+import { Code2, Download, Eye, Wand2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import { toast } from "sonner";
-
+import TransformImageDialog from "@/app/components/dialogs/transform-image-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -16,7 +17,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
 import type { TransformedImage } from "../../types/general";
 import { formatBytes } from "../../utils/format";
 import { downloadImage } from "../../utils/image-utils";
@@ -30,6 +30,8 @@ const TransformedImageCard = ({
   transformedImage,
   originalImageName,
 }: TransformedImageCardProps) => {
+  const [isTransformDialogOpen, setIsTransformDialogOpen] = useState(false);
+
   const handleDownload = async () => {
     try {
       const [name, extension] = originalImageName.split(".");
@@ -99,6 +101,21 @@ const TransformedImageCard = ({
             </TooltipContent>
           </Tooltip>
           <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="default"
+                size="icon"
+                onClick={() => setIsTransformDialogOpen(true)}
+              >
+                <Wand2 />
+                <span className="sr-only">Transform transformed image</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Transform transformed image</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
             <Popover>
               <PopoverTrigger asChild>
                 <TooltipTrigger asChild>
@@ -125,6 +142,16 @@ const TransformedImageCard = ({
           </Tooltip>
         </div>
       </CardContent>
+      <TransformImageDialog
+        open={isTransformDialogOpen}
+        onOpenChange={setIsTransformDialogOpen}
+        image={{
+          id: transformedImage.id,
+          secureUrl: transformedImage.secureUrl,
+          originalName: originalImageName,
+        }}
+        isTransformedImage={true}
+      />
     </Card>
   );
 };
