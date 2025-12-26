@@ -1,7 +1,8 @@
 import { format } from "date-fns";
-import { Code2, Eye } from "lucide-react";
+import { Code2, Download, Eye } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -18,6 +19,7 @@ import {
 
 import type { TransformedImage } from "../../types/general";
 import { formatBytes } from "../../utils/format";
+import { downloadImage } from "../../utils/image-utils";
 
 interface TransformedImageCardProps {
   transformedImage: TransformedImage;
@@ -28,6 +30,25 @@ const TransformedImageCard = ({
   transformedImage,
   originalImageName,
 }: TransformedImageCardProps) => {
+  const handleDownload = async () => {
+    try {
+      const [name, extension] = originalImageName.split(".");
+      const transformedFilename = `transformed-${name}.${extension}`;
+
+      await downloadImage(transformedImage.secureUrl, transformedFilename);
+
+      toast.success("Transformed image downloaded successfully", {
+        id: `download-success-${transformedImage.id}`,
+      });
+    } catch (error) {
+      console.error("Failed to download transformed image:", error);
+      toast.error("Failed to download transformed image", {
+        description: "Please try again later",
+        id: `download-error-${transformedImage.id}`,
+      });
+    }
+  };
+
   return (
     <Card
       id={`transformed-image-${transformedImage.id}`}
@@ -64,6 +85,17 @@ const TransformedImageCard = ({
             </TooltipTrigger>
             <TooltipContent>
               <p>View transformed image</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" size="icon" onClick={handleDownload}>
+                <Download />
+                <span className="sr-only">Download transformed image</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Download transformed image</p>
             </TooltipContent>
           </Tooltip>
           <Tooltip>
