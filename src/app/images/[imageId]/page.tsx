@@ -33,9 +33,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 const TRANSFORMED_IMAGES_PER_BATCH = 9;
 
 const Page = () => {
-  const params = useParams();
+  const params = useParams<{ imageId: string }>();
   const router = useRouter();
-  const imageId = params?.imageId as string;
+  const imageId = params.imageId;
   const { imagesQuery, deleteImageMutation } = useImages();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isTransformDialogOpen, setIsTransformDialogOpen] = useState(false);
@@ -160,6 +160,10 @@ const Page = () => {
     if (!image) return;
     try {
       await downloadImage(image.secureUrl, image.originalName);
+
+      toast.success("Image downloaded successfully", {
+        id: `download-success-${image.id}`,
+      });
     } catch (error) {
       console.error("Failed to download image:", error);
       toast.error("Failed to download image", {
