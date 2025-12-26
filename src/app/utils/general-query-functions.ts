@@ -67,6 +67,24 @@ export const transformImage = async (
   }
 };
 
+export const transformTransformedImage = async (
+  id: string,
+  formValues: TransformImageFormValues
+) => {
+  try {
+    const response = await axios.post(
+      `/transformed-images/${id}/transform`,
+      formValues
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Error from `transformTransformedImage`:", error);
+
+    throw error;
+  }
+};
+
 export const deleteImage = async (id: string) => {
   try {
     const response = await axios.delete(`/images/${id}`);
