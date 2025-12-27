@@ -6,10 +6,12 @@ import { toast } from "sonner";
 
 import getSocketInstance from "../libs/socket-instance";
 import type {
+  Image,
   TransformedImage,
   TransformImageFormValues,
 } from "../types/general";
 import {
+  deleteTransformedImage,
   fetchTransformedImage,
   transformTransformedImage,
 } from "../utils/general-query-functions";
@@ -250,9 +252,71 @@ const useTransformedImage = (id: string) => {
     },
   });
 
+  const deleteTransformedImageMutation = useMutation<
+    TransformedImage,
+    AxiosError<{ message: string }>,
+    {
+      id: string;
+      onOpenChange: (open: boolean) => void;
+    }
+  >({
+    mutationFn: async ({ id }) => {
+      return deleteTransformedImage(id);
+    },
+    onError: (error) => {
+      const message =
+        error.response?.data?.message || "Failed to delete transformed image";
+
+      toast.error(message, { id: "delete-transformed-image-error" });
+    },
+    onSuccess: (deletedTransformedImage, { onOpenChange }) => {
+      onOpenChange(false);
+
+      toast.success("Transformed image deleted successfully", {
+        id: "delete-transformed-image-success",
+      });
+
+      if (deletedTransformedImage.parentId) {
+        // Update the parent transformed image query cache
+        queryClient.setQueryData<TransformedImage>(
+          ["transformed-images", deletedTransformedImage.parentId],
+          (oldData) => {
+            if (!oldData) return oldData;
+
+            return {
+              ...oldData,
+              transformedTransformedImages:
+                oldData.transformedTransformedImages.filter(
+                  (ti: TransformedImage) => ti.id !== deletedTransformedImage.id
+                ),
+            };
+          }
+        );
+      } else {
+        // Update the original image query cache
+        queryClient.setQueryData<Image[]>(["images"], (oldData) => {
+          if (!oldData) return oldData;
+
+          return oldData.map((image) =>
+            image.id === deletedTransformedImage.originalImageId
+              ? {
+                  ...image,
+                  transformedImages: image.transformedImages.filter(
+                    (ti: TransformedImage) =>
+                      ti.id !== deletedTransformedImage.id
+                  ),
+                }
+              : image
+          );
+        });
+      }
+    },
+  });
+
   return {
     transformedImageQuery,
     transformTransformedImageMutation,
+    deleteTransformedImageMutation,
   };
 };
 

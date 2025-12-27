@@ -96,3 +96,15 @@ export const deleteImage = async (id: string) => {
     throw error;
   }
 };
+
+export const deleteTransformedImage = async (id: string) => {
+  try {
+    const response = await axios.delete(`/transformed-images/${id}`);
+
+    return response.data;
+  } catch (error) {
+    console.error("Error from `deleteTransformedImage`:", error);
+
+    throw error;
+  }
+};
