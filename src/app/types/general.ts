@@ -14,10 +14,12 @@ export interface Image {
   size: number;
   secureUrl: string;
   format: string;
+  downloadsCount: number;
   createdAt: string;
   updatedAt: string;
 
   transformedImages: TransformedImage[];
+  likes: Like[];
 }
 
 export interface TransformedImage {
@@ -26,9 +28,20 @@ export interface TransformedImage {
   size: number;
   secureUrl: string;
   parentId: string | null;
+  downloadsCount: number;
   createdAt: string;
   updatedAt: string;
 
   transformation: TransformImageFormValues;
   transformedTransformedImages: TransformedImage[];
+  likes: Like[];
+}
+
+export interface Like {
+  id: string;
+  userId: string;
+  imageId: string | null;
+  transformedImageId: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
