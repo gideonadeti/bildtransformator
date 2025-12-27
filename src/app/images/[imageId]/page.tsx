@@ -37,11 +37,8 @@ const Page = () => {
   const params = useParams<{ imageId: string }>();
   const imageId = params.imageId;
   const { user } = useUser();
-  const {
-    imagesQuery,
-    likeUnlikeImageMutation,
-    downloadImageMutation,
-  } = useImages();
+  const { imagesQuery, likeUnlikeImageMutation, downloadImageMutation } =
+    useImages();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isTransformDialogOpen, setIsTransformDialogOpen] = useState(false);
 
@@ -57,9 +54,10 @@ const Page = () => {
   const likesCount = image?.likes?.length || 0;
 
   // Check if current user has liked this image
-  const isLiked = user && image
-    ? image.likes?.some((like) => like.userId === user.id) ?? false
-    : false;
+  const isLiked =
+    user && image
+      ? image.likes?.some((like) => like.userId === user.id) ?? false
+      : false;
 
   // Scroll to transformed image if hash is present
   // biome-ignore lint/correctness/useExhaustiveDependencies: image is a necessary dependency to scroll to the transformed image if the hash is present
@@ -339,7 +337,9 @@ const Page = () => {
                             <Download className="inline size-3" />
                             <span>
                               {formatNumber(image.downloadsCount)}{" "}
-                              {image.downloadsCount === 1 ? "download" : "downloads"}
+                              {image.downloadsCount === 1
+                                ? "download"
+                                : "downloads"}
                             </span>
                           </>
                         )}
@@ -366,7 +366,6 @@ const Page = () => {
             <Button
               variant={isLiked ? "default" : "outline"}
               onClick={handleLikeUnlike}
-              disabled={likeUnlikeImageMutation.isPending}
             >
               <Heart
                 className={isLiked ? "fill-current" : ""}
@@ -375,11 +374,7 @@ const Page = () => {
               />
               {isLiked ? "Unlike" : "Like"}
             </Button>
-            <Button
-              variant="outline"
-              onClick={handleDownload}
-              disabled={downloadImageMutation.isPending}
-            >
+            <Button variant="outline" onClick={handleDownload}>
               <Download />
               Download
             </Button>

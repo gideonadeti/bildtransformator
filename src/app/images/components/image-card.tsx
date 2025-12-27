@@ -166,7 +166,6 @@ const ImageCard = ({
                 variant={isLiked ? "default" : "outline"}
                 size="icon"
                 onClick={handleLikeUnlike}
-                disabled={likeUnlikeImageMutation.isPending}
               >
                 <Heart
                   className={isLiked ? "fill-current" : ""}
@@ -182,12 +181,7 @@ const ImageCard = ({
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handleDownload}
-                disabled={downloadImageMutation.isPending}
-              >
+              <Button variant="outline" size="icon" onClick={handleDownload}>
                 <Download />
                 <span className="sr-only">Download</span>
               </Button>
