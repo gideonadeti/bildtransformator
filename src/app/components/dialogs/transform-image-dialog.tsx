@@ -43,6 +43,7 @@ interface TransformImageDialogProps {
     id: string;
     secureUrl: string;
     originalName: string;
+    parentId?: string | null;
   } | null;
   isTransformedImage?: boolean;
   onOpenChange: (open: boolean) => void;
@@ -69,7 +70,6 @@ const TransformImageDialog = ({
     shouldUnregister: false,
     defaultValues: {
       resize: undefined,
-      crop: undefined,
       rotate: undefined,
       grayscale: undefined,
       tint: "",
@@ -79,27 +79,16 @@ const TransformImageDialog = ({
 
   // Watch form values to auto-generate order
   const resize = form.watch("resize");
-  const crop = form.watch("crop");
   const rotate = form.watch("rotate");
   const grayscale = form.watch("grayscale");
   const tint = form.watch("tint");
 
   // Auto-generate order based on enabled transformations
   const enabledTransforms = useMemo(() => {
-    const transforms: Array<
-      "resize" | "crop" | "rotate" | "grayscale" | "tint"
-    > = [];
+    const transforms: Array<"resize" | "rotate" | "grayscale" | "tint"> = [];
 
     const hasResize = resize && (resize.width != null || resize.height != null);
     if (hasResize) transforms.push("resize");
-
-    const hasCrop =
-      crop != null &&
-      (crop.left != null ||
-        crop.top != null ||
-        crop.width != null ||
-        crop.height != null);
-    if (hasCrop) transforms.push("crop");
 
     const hasRotate =
       typeof rotate === "number" && Number.isFinite(rotate as number);
@@ -112,7 +101,7 @@ const TransformImageDialog = ({
     if (hasTint) transforms.push("tint");
 
     return transforms;
-  }, [resize, crop, rotate, grayscale, tint]);
+  }, [resize, rotate, grayscale, tint]);
 
   // Update order when enabled transforms change
   useEffect(() => {
@@ -166,10 +155,6 @@ const TransformImageDialog = ({
       };
     }
 
-    if (formValues.crop) {
-      cleanedData.crop = formValues.crop;
-    }
-
     if (formValues.rotate != null) {
       cleanedData.rotate = formValues.rotate;
     }
@@ -216,54 +201,19 @@ const TransformImageDialog = ({
     form.setValue("order", newOrder, { shouldValidate: true });
   };
 
-  const handleCropFieldChange = (
-    field: "left" | "top" | "width" | "height",
-    value: string
-  ) => {
-    const numValue = value === "" ? undefined : Number(value);
-    const currentCrop = form.getValues("crop");
-
-    if (numValue !== undefined) {
-      // Initialize crop object if it doesn't exist, or update the field
-      form.setValue(
-        "crop",
-        {
-          left: field === "left" ? numValue : currentCrop?.left ?? 0,
-          top: field === "top" ? numValue : currentCrop?.top ?? 0,
-          width: field === "width" ? numValue : currentCrop?.width ?? 1,
-          height: field === "height" ? numValue : currentCrop?.height ?? 1,
-        },
-        { shouldValidate: true }
-      );
-    } else {
-      // If clearing a field, check if all fields are now empty
-      const otherFields = {
-        left: field === "left" ? undefined : currentCrop?.left,
-        top: field === "top" ? undefined : currentCrop?.top,
-        width: field === "width" ? undefined : currentCrop?.width,
-        height: field === "height" ? undefined : currentCrop?.height,
-      };
-
-      const hasAnyValue =
-        (otherFields.left != null && otherFields.left !== undefined) ||
-        (otherFields.top != null && otherFields.top !== undefined) ||
-        (otherFields.width != null && otherFields.width !== undefined) ||
-        (otherFields.height != null && otherFields.height !== undefined);
-
-      if (!hasAnyValue) {
-        form.setValue("crop", undefined, { shouldValidate: true });
-      }
-      // If other fields have values, keep the crop object but validation will catch incomplete crop
-    }
-  };
-
   if (!image) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <CustomDialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Transform Image</DialogTitle>
+          <DialogTitle>
+            {isTransformedImage
+              ? image?.parentId
+                ? "Transform Transformed Transformed Image"
+                : "Transform Transformed Image"
+              : "Transform Image"}
+          </DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form
@@ -455,131 +405,6 @@ const TransformImageDialog = ({
                           </FormItem>
                         )}
                       />
-                    </AccordionContent>
-                  </AccordionItem>
-
-                  {/* Crop Section */}
-                  <AccordionItem value="crop">
-                    <AccordionTrigger>Crop</AccordionTrigger>
-                    <AccordionContent className="space-y-3 px-2">
-                      <div className="grid grid-cols-2 gap-3">
-                        <FormField
-                          control={form.control}
-                          name="crop.left"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Left</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="number"
-                                  placeholder="Left"
-                                  {...field}
-                                  onChange={(e) => {
-                                    handleCropFieldChange(
-                                      "left",
-                                      e.target.value
-                                    );
-                                    field.onChange(
-                                      e.target.value === ""
-                                        ? undefined
-                                        : Number(e.target.value)
-                                    );
-                                  }}
-                                  value={form.watch("crop")?.left ?? ""}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="crop.top"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Top</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="number"
-                                  placeholder="Top"
-                                  {...field}
-                                  onChange={(e) => {
-                                    handleCropFieldChange(
-                                      "top",
-                                      e.target.value
-                                    );
-                                    field.onChange(
-                                      e.target.value === ""
-                                        ? undefined
-                                        : Number(e.target.value)
-                                    );
-                                  }}
-                                  value={form.watch("crop")?.top ?? ""}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="crop.width"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Crop Width</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="number"
-                                  placeholder="Width"
-                                  {...field}
-                                  onChange={(e) => {
-                                    handleCropFieldChange(
-                                      "width",
-                                      e.target.value
-                                    );
-                                    field.onChange(
-                                      e.target.value === ""
-                                        ? undefined
-                                        : Number(e.target.value)
-                                    );
-                                  }}
-                                  value={form.watch("crop")?.width ?? ""}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name="crop.height"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Crop Height</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="number"
-                                  placeholder="Height"
-                                  {...field}
-                                  onChange={(e) => {
-                                    handleCropFieldChange(
-                                      "height",
-                                      e.target.value
-                                    );
-                                    field.onChange(
-                                      e.target.value === ""
-                                        ? undefined
-                                        : Number(e.target.value)
-                                    );
-                                  }}
-                                  value={form.watch("crop")?.height ?? ""}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
                     </AccordionContent>
                   </AccordionItem>
 
