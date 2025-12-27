@@ -1,3 +1,11 @@
+/**
+ * Formats a number with comma separators (e.g., 1000 -> "1,000")
+ * Uses the built-in toLocaleString method.
+ */
+export const formatNumber = (num: number): string => {
+  return num.toLocaleString("en-US");
+};
+
 export const formatBytes = (bytes: number) => {
   if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
 
