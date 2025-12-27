@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { ArrowLeft, Download, Trash2, Wand2 } from "lucide-react";
+import { ArrowLeft, Download, Heart, Trash2, Wand2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -17,9 +17,10 @@ import {
   useTransformedImagesFilter,
 } from "@/app/hooks/use-transformed-images-filter";
 import { useTransformedImagesUrlFilters } from "@/app/hooks/use-transformed-images-url-filters";
+import useUser from "@/app/hooks/use-user";
 import TransformedImageCard from "@/app/images/components/transformed-image-card";
 import TransformedImagesToolbar from "@/app/images/components/transformed-images-toolbar";
-import { formatBytes } from "@/app/utils/format";
+import { formatBytes, formatNumber } from "@/app/utils/format";
 import { downloadImage } from "@/app/utils/image-utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,7 +36,12 @@ const TRANSFORMED_IMAGES_PER_BATCH = 9;
 const Page = () => {
   const params = useParams<{ imageId: string }>();
   const imageId = params.imageId;
-  const { imagesQuery } = useImages();
+  const { user } = useUser();
+  const {
+    imagesQuery,
+    likeUnlikeImageMutation,
+    downloadImageMutation,
+  } = useImages();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isTransformDialogOpen, setIsTransformDialogOpen] = useState(false);
 
@@ -48,6 +54,12 @@ const Page = () => {
 
   const transformedImages = image?.transformedImages || [];
   const transformedCount = transformedImages.length;
+  const likesCount = image?.likes?.length || 0;
+
+  // Check if current user has liked this image
+  const isLiked = user && image
+    ? image.likes?.some((like) => like.userId === user.id) ?? false
+    : false;
 
   // Scroll to transformed image if hash is present
   // biome-ignore lint/correctness/useExhaustiveDependencies: image is a necessary dependency to scroll to the transformed image if the hash is present
@@ -146,6 +158,10 @@ const Page = () => {
   const handleDownload = async () => {
     if (!image) return;
     try {
+      // Increment the downloads count of the image
+      await downloadImageMutation.mutateAsync({ id: image.id });
+
+      // Download the image
       await downloadImage(image.secureUrl, image.originalName);
 
       toast.success("Image downloaded successfully", {
@@ -158,6 +174,11 @@ const Page = () => {
         id: `download-error-${image.id}`,
       });
     }
+  };
+
+  const handleLikeUnlike = () => {
+    if (!image) return;
+    likeUnlikeImageMutation.mutate({ id: image.id });
   };
 
   const handleTransform = () => {
@@ -297,6 +318,35 @@ const Page = () => {
                     {transformedCount} image{transformedCount !== 1 ? "s" : ""}
                   </span>
                 </div>
+                {(likesCount > 0 || image.downloadsCount > 0) && (
+                  <div className="flex flex-wrap gap-4 text-sm">
+                    <span className="block text-xs">
+                      <span className="inline-flex items-center gap-1.5">
+                        {likesCount > 0 && (
+                          <>
+                            <Heart className="inline size-3" />
+                            <span>
+                              {formatNumber(likesCount)}{" "}
+                              {likesCount === 1 ? "like" : "likes"}
+                            </span>
+                          </>
+                        )}
+                        {likesCount > 0 && image.downloadsCount > 0 && (
+                          <span className="mx-1">•</span>
+                        )}
+                        {image.downloadsCount > 0 && (
+                          <>
+                            <Download className="inline size-3" />
+                            <span>
+                              {formatNumber(image.downloadsCount)}{" "}
+                              {image.downloadsCount === 1 ? "download" : "downloads"}
+                            </span>
+                          </>
+                        )}
+                      </span>
+                    </span>
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-4 text-sm">
                   <span>
                     <span className="font-medium">Uploaded on:</span>{" "}
@@ -313,7 +363,23 @@ const Page = () => {
               <Wand2 />
               Transform
             </Button>
-            <Button variant="outline" onClick={handleDownload}>
+            <Button
+              variant={isLiked ? "default" : "outline"}
+              onClick={handleLikeUnlike}
+              disabled={likeUnlikeImageMutation.isPending}
+            >
+              <Heart
+                className={isLiked ? "fill-current" : ""}
+                size={16}
+                strokeWidth={2}
+              />
+              {isLiked ? "Unlike" : "Like"}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleDownload}
+              disabled={downloadImageMutation.isPending}
+            >
               <Download />
               Download
             </Button>
