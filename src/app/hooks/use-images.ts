@@ -20,11 +20,13 @@ import {
   uploadImage,
 } from "../utils/general-query-functions";
 import useAccessToken from "./use-access-token";
+import useUser from "./use-user";
 
 const useImages = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
   const { accessToken } = useAccessToken();
+  const { user } = useUser();
   const imagesQuery = useQuery<Image[], AxiosError<{ message: string }>>({
     queryKey: ["images"],
     queryFn: async () => await fetchImages(),
@@ -198,62 +200,106 @@ const useImages = () => {
   const likeUnlikeImageMutation = useMutation<
     Like & { action: "liked" | "unliked" },
     AxiosError<{ message: string }>,
-    { id: string }
+    { id: string },
+    { previousImages: Image[] | undefined }
   >({
     mutationFn: async ({ id }) => {
       return likeUnlikeImage(id);
     },
-    onError: (error) => {
-      const message =
-        error.response?.data?.message || "Failed to like or unlike image";
+    onMutate: async ({ id }, context) => {
+      await context.client.cancelQueries({ queryKey: ["images"] });
 
-      toast.error(message, { id: "like-unlike-image-error" });
-    },
-    onSuccess: (data) => {
-      // Update the images query cache optimistically
-      queryClient.setQueryData<Image[]>(["images"], (oldImages) => {
-        if (!oldImages) return oldImages;
+      const previousImages = context.client.getQueryData<Image[]>(["images"]);
 
-        if (data.action === "liked") {
+      if (!user) {
+        return { previousImages };
+      }
+
+      const existingLike = previousImages
+        ?.find((image) => image.id === id)
+        ?.likes.find((like) => like.userId === user.id);
+
+      if (existingLike) {
+        // Unlike: remove the existing like
+        context.client.setQueryData<Image[]>(["images"], (oldImages) => {
+          if (!oldImages) return oldImages;
+
           return oldImages.map((image) => {
-            if (image.id !== data.imageId) {
-              return image;
-            }
-
-            return { ...image, likes: [...image.likes, data] };
-          });
-        } else {
-          return oldImages.map((image) => {
-            if (image.id !== data.imageId) {
+            if (image.id !== id) {
               return image;
             }
 
             return {
               ...image,
-              likes: image.likes.filter((like) => like.id !== data.id),
+              likes: image.likes.filter((like) => like.id !== existingLike.id),
             };
           });
-        }
-      });
+        });
+      } else {
+        // Like: add a new like
+        context.client.setQueryData<Image[]>(["images"], (oldImages) => {
+          if (!oldImages) return oldImages;
+
+          return oldImages.map((image) => {
+            if (image.id !== id) {
+              return image;
+            }
+
+            return {
+              ...image,
+              likes: [
+                ...image.likes,
+                {
+                  id: `temp-${Date.now()}`,
+                  userId: user.id,
+                  imageId: id,
+                  transformedImageId: null,
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString(),
+                },
+              ],
+            };
+          });
+        });
+      }
+
+      return { previousImages };
+    },
+    onError: (error, _variables, onMutateResult, _context) => {
+      const message =
+        error.response?.data?.message || "Failed to like or unlike image";
+
+      toast.error(message, { id: "like-unlike-image-error" });
+
+      // Restore previous images data if available
+      if (onMutateResult?.previousImages) {
+        queryClient.setQueryData<Image[]>(
+          ["images"],
+          onMutateResult.previousImages
+        );
+      }
+    },
+    onSettled: (_data, _error, _variables, _onMutateResult, context) => {
+      context.client.invalidateQueries({ queryKey: ["images"] });
     },
   });
 
   const downloadImageMutation = useMutation<
     boolean,
     AxiosError<{ message: string }>,
-    { id: string }
+    { id: string },
+    { previousImages: Image[] | undefined }
   >({
     mutationFn: async ({ id }) => {
       return downloadImage(id);
     },
-    onError: (error) => {
-      const message =
-        error.response?.data?.message || "Failed to download image";
+    onMutate: async ({ id }, context) => {
+      await context.client.cancelQueries({ queryKey: ["images"] });
 
-      toast.error(message, { id: "download-image-error" });
-    },
-    onSuccess: (_, { id }) => {
-      queryClient.setQueryData<Image[]>(["images"], (oldImages) => {
+      const previousImages = context.client.getQueryData<Image[]>(["images"]);
+
+      // Optimistically increment downloadsCount
+      context.client.setQueryData<Image[]>(["images"], (oldImages) => {
         if (!oldImages) return oldImages;
 
         return oldImages.map((image) => {
@@ -264,6 +310,25 @@ const useImages = () => {
           return image;
         });
       });
+
+      return { previousImages };
+    },
+    onError: (error, _variables, onMutateResult, _context) => {
+      const message =
+        error.response?.data?.message || "Failed to download image";
+
+      toast.error(message, { id: "download-image-error" });
+
+      // Restore previous images data if available
+      if (onMutateResult?.previousImages) {
+        queryClient.setQueryData<Image[]>(
+          ["images"],
+          onMutateResult.previousImages
+        );
+      }
+    },
+    onSettled: (_data, _error, _variables, _onMutateResult, context) => {
+      context.client.invalidateQueries({ queryKey: ["images"] });
     },
   });
 
