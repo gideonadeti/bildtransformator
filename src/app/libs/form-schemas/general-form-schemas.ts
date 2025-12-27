@@ -33,18 +33,8 @@ const resizeOptionsSchema = z
   )
   .optional();
 
-const cropOptionsSchema = z
-  .object({
-    left: z.coerce.number<number>().int().min(0),
-    top: z.coerce.number<number>().int().min(0),
-    width: z.coerce.number<number>().int().positive(),
-    height: z.coerce.number<number>().int().positive(),
-  })
-  .optional();
-
 const transformationTypeEnum = z.enum([
   "resize",
-  "crop",
   "rotate",
   "grayscale",
   "tint",
@@ -53,7 +43,6 @@ const transformationTypeEnum = z.enum([
 export const transformImageFormSchema = z
   .object({
     resize: resizeOptionsSchema,
-    crop: cropOptionsSchema,
     rotate: z.coerce.number<number>().int().min(-360).max(360).optional(),
     grayscale: z.boolean().optional(),
     tint: z.string().optional(),
@@ -66,12 +55,11 @@ export const transformImageFormSchema = z
         data.resize &&
         (data.resize.width != null || data.resize.height != null);
 
-      const hasCrop = data.crop != null;
       const hasRotate = data.rotate != null;
       const hasGrayscale = data.grayscale != null;
       const hasTint = data.tint != null && data.tint.trim() !== "";
 
-      return hasResize || hasCrop || hasRotate || hasGrayscale || hasTint;
+      return hasResize || hasRotate || hasGrayscale || hasTint;
     },
     {
       message: "At least one valid transformation option must be provided.",
@@ -81,7 +69,7 @@ export const transformImageFormSchema = z
     (data) => {
       // Order must contain all and only enabled transformations
       const activeTransforms: Array<
-        "resize" | "crop" | "rotate" | "grayscale" | "tint"
+        "resize" | "rotate" | "grayscale" | "tint"
       > = [];
 
       const hasResize =
@@ -89,7 +77,6 @@ export const transformImageFormSchema = z
         (data.resize.width != null || data.resize.height != null);
 
       if (hasResize) activeTransforms.push("resize");
-      if (data.crop) activeTransforms.push("crop");
       if (data.rotate != null) activeTransforms.push("rotate");
       if (data.grayscale != null) activeTransforms.push("grayscale");
       if (data.tint != null && data.tint.trim() !== "")
