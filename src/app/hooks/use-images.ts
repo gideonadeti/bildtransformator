@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { socket } from "@/lib/socket";
 import type {
   Image,
-  Like,
   TransformedImage,
   TransformImageFormValues,
 } from "../types/general";
@@ -199,7 +198,7 @@ const useImages = () => {
   });
 
   const likeUnlikeImageMutation = useMutation<
-    Like & { action: "liked" | "unliked" },
+    boolean,
     AxiosError<{ message: string }>,
     { id: string },
     { previousImages: Image[] | undefined }
@@ -334,7 +333,7 @@ const useImages = () => {
   });
 
   const togglePublicImageMutation = useMutation<
-    Image,
+    boolean,
     AxiosError<{ message: string }>,
     { id: string },
     { previousImages: Image[] | undefined }
