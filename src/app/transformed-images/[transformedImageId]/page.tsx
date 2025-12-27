@@ -1,13 +1,14 @@
 "use client";
 
 import { format } from "date-fns";
-import { ArrowLeft, Code2, Download, Wand2 } from "lucide-react";
+import { ArrowLeft, Code2, Download, Trash2, Wand2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
+import DeleteImageDialog from "@/app/components/dialogs/delete-image-dialog";
 import TransformImageDialog from "@/app/components/dialogs/transform-image-dialog";
 import useImages from "@/app/hooks/use-images";
 import { usePagination } from "@/app/hooks/use-pagination";
@@ -44,6 +45,7 @@ const Page = () => {
   const { transformedImageQuery } = useTransformedImage(transformedImageId);
   const { imagesQuery } = useImages();
   const [isTransformDialogOpen, setIsTransformDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const transformedImage = transformedImageQuery.data;
   const isLoading = transformedImageQuery.isPending;
@@ -169,12 +171,20 @@ const Page = () => {
         `transformed-image-${transformedImage.id}`
       );
 
-      toast.success("Image downloaded successfully", {
+      const successMessage = transformedImage.parentId
+        ? "Transformed transformed image downloaded successfully"
+        : "Transformed image downloaded successfully";
+
+      toast.success(successMessage, {
         id: `download-success-${transformedImage.id}`,
       });
     } catch (error) {
-      console.error("Failed to download image:", error);
-      toast.error("Failed to download image", {
+      const errorMessage = transformedImage.parentId
+        ? "Failed to download transformed transformed image"
+        : "Failed to download transformed image";
+
+      console.error(errorMessage, ":", error);
+      toast.error(errorMessage, {
         description: "Please try again later",
         id: `download-error-${transformedImage.id}`,
       });
@@ -217,43 +227,43 @@ const Page = () => {
           {/* Action buttons skeleton */}
           <div className="flex flex-wrap gap-2">
             <Skeleton className="h-9 w-28" />
+            <Skeleton className="h-9 w-28" />
             <Skeleton className="h-9 w-40" />
+            <Skeleton className="h-9 w-28" />
           </div>
 
           {/* Transformed transformed images section skeleton */}
-          {transformedCount > 0 && (
+          <div className="space-y-4">
+            {/* Heading skeleton */}
+            <Skeleton className="h-8 w-64" />
+
+            {/* Toolbar skeleton */}
             <div className="space-y-4">
-              {/* Heading skeleton */}
-              <Skeleton className="h-8 w-64" />
-
-              {/* Toolbar skeleton */}
-              <div className="space-y-4">
-                <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
-                  {/* Size filter skeleton */}
-                  <div className="w-full lg:w-auto space-y-1">
-                    <Skeleton className="h-4 w-20" />
-                    <div className="flex flex-col gap-2 sm:flex-row">
-                      <Skeleton className="h-9 w-[160px]" />
-                      <Skeleton className="h-9 w-[160px]" />
-                    </div>
-                  </div>
-
-                  {/* Sort skeleton */}
-                  <div className="w-full sm:w-[260px] space-y-1">
-                    <Skeleton className="h-4 w-12" />
-                    <Skeleton className="h-9 w-full" />
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
+                {/* Size filter skeleton */}
+                <div className="w-full lg:w-auto space-y-1">
+                  <Skeleton className="h-4 w-20" />
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <Skeleton className="h-9 w-[160px]" />
+                    <Skeleton className="h-9 w-[160px]" />
                   </div>
                 </div>
-              </div>
 
-              {/* Grid skeleton */}
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <Skeleton key={i.toString()} className="h-[280px] w-full" />
-                ))}
+                {/* Sort skeleton */}
+                <div className="w-full sm:w-[260px] space-y-1">
+                  <Skeleton className="h-4 w-12" />
+                  <Skeleton className="h-9 w-full" />
+                </div>
               </div>
             </div>
-          )}
+
+            {/* Grid skeleton */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i.toString()} className="h-[280px] w-full" />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -365,7 +375,7 @@ const Page = () => {
 
         {/* Action buttons */}
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={handleTransform}>
+          <Button onClick={handleTransform}>
             <Wand2 />
             Transform
           </Button>
@@ -391,6 +401,13 @@ const Page = () => {
               </div>
             </PopoverContent>
           </Popover>
+          <Button
+            variant="destructive"
+            onClick={() => setIsDeleteDialogOpen(true)}
+          >
+            <Trash2 />
+            Delete
+          </Button>
         </div>
 
         {/* Transformed transformed images section */}
@@ -457,6 +474,13 @@ const Page = () => {
           originalName: originalImageName,
         }}
         isTransformedImage={true}
+      />
+
+      {/* Delete confirmation dialog */}
+      <DeleteImageDialog
+        image={transformedImage}
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
       />
     </div>
   );
