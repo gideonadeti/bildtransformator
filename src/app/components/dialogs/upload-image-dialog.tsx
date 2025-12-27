@@ -56,7 +56,7 @@ const UploadImageDialog = ({ open, onOpenChange }: UploadImageDialogProps) => {
       if (acceptedFiles.length === 0) return;
       if (acceptedFiles.length > 1) {
         toast.error("You can only upload one image at a time", {
-          id: "upload-images-error",
+          id: "upload-image-error",
         });
 
         return;
