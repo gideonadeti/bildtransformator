@@ -292,6 +292,8 @@ const useTransformedImage = (id: string) => {
             };
           }
         );
+
+        router.push(`/transformed-images/${deletedTransformedImage.parentId}`);
       } else {
         // Update the original image query cache
         queryClient.setQueryData<Image[]>(["images"], (oldData) => {
@@ -309,6 +311,8 @@ const useTransformedImage = (id: string) => {
               : image
           );
         });
+
+        router.push(`/images/${deletedTransformedImage.originalImageId}`);
       }
     },
   });
