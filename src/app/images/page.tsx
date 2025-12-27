@@ -1,8 +1,17 @@
 "use client";
 
+import { Image as ImageIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
 import DeleteImageDialog from "../components/dialogs/delete-image-dialog";
 import TransformImageDialog from "../components/dialogs/transform-image-dialog";
@@ -176,45 +185,78 @@ const Page = () => {
     );
   }
 
+  const hasNoImages = images.length === 0;
+
   return (
     <>
       <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <div className="space-y-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold">Images</h1>
-              <p className="text-muted-foreground">
-                {filteredAndSortedImages.length} image
-                {filteredAndSortedImages.length !== 1 ? "s" : ""} found
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => setIsUploadImageDialogOpen(true)}
-            >
-              Upload Image
-            </Button>
-          </div>
+          {!hasNoImages && (
+            <>
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-3xl font-bold">Images</h1>
+                  <p className="text-muted-foreground">
+                    {filteredAndSortedImages.length} image
+                    {filteredAndSortedImages.length !== 1 ? "s" : ""} found
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsUploadImageDialogOpen(true)}
+                >
+                  Upload Image
+                </Button>
+              </div>
 
-          <ImagesToolbar
-            filters={filters}
-            minSizeInData={minSizeInData}
-            maxSizeInData={maxSizeInData}
-            availableFormats={availableFormats}
-            nameValue={nameInput}
-            onNameChange={(value) => updateFilters({ name: value })}
-            hasActiveFilters={hasActiveFilters}
-            onFiltersChange={(patch) => updateFilters(patch)}
-            onClearFilters={handleClearFilters}
-          />
+              <ImagesToolbar
+                filters={filters}
+                minSizeInData={minSizeInData}
+                maxSizeInData={maxSizeInData}
+                availableFormats={availableFormats}
+                nameValue={nameInput}
+                onNameChange={(value) => updateFilters({ name: value })}
+                hasActiveFilters={hasActiveFilters}
+                onFiltersChange={(patch) => updateFilters(patch)}
+                onClearFilters={handleClearFilters}
+              />
+            </>
+          )}
 
-          {displayedImages.length === 0 ? (
-            <div className="py-12 text-center">
-              <p className="text-muted-foreground text-lg">
-                No images found. Try adjusting your filters or upload a new
-                image.
-              </p>
-            </div>
+          {hasNoImages ? (
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <ImageIcon />
+                </EmptyMedia>
+                <EmptyTitle>No images found</EmptyTitle>
+                <EmptyDescription>
+                  Get started by uploading your first image.
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
+                <Button onClick={() => setIsUploadImageDialogOpen(true)}>
+                  Upload Image
+                </Button>
+              </EmptyContent>
+            </Empty>
+          ) : displayedImages.length === 0 ? (
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <ImageIcon />
+                </EmptyMedia>
+                <EmptyTitle>No images found</EmptyTitle>
+                <EmptyDescription>
+                  Try adjusting your filters or upload a new image.
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
+                <Button onClick={() => setIsUploadImageDialogOpen(true)}>
+                  Upload Image
+                </Button>
+              </EmptyContent>
+            </Empty>
           ) : (
             <>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
