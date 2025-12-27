@@ -95,12 +95,20 @@ const TransformedImageCard = ({
                   <Button variant="outline" size="icon" asChild>
                     <Link href={`/transformed-images/${transformedImage.id}`}>
                       <Eye />
-                      <span className="sr-only">View transformed image</span>
+                      <span className="sr-only">
+                        {transformedImage.parentId
+                          ? "View transformed transformed image"
+                          : "View transformed image"}
+                      </span>
                     </Link>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>View transformed image</p>
+                  <p>
+                    {transformedImage.parentId
+                      ? "View transformed transformed image"
+                      : "View transformed image"}
+                  </p>
                 </TooltipContent>
               </Tooltip>
               <Tooltip>
@@ -111,11 +119,19 @@ const TransformedImageCard = ({
                     onClick={() => setIsTransformDialogOpen(true)}
                   >
                     <Wand2 />
-                    <span className="sr-only">Transform transformed image</span>
+                    <span className="sr-only">
+                      {transformedImage.parentId
+                        ? "Transform transformed transformed image"
+                        : "Transform transformed image"}
+                    </span>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Transform transformed image</p>
+                  <p>
+                    {transformedImage.parentId
+                      ? "Transform transformed transformed image"
+                      : "Transform transformed image"}
+                  </p>
                 </TooltipContent>
               </Tooltip>
               <Tooltip>
@@ -126,11 +142,19 @@ const TransformedImageCard = ({
                     onClick={handleDownload}
                   >
                     <Download />
-                    <span className="sr-only">Download transformed image</span>
+                    <span className="sr-only">
+                      {transformedImage.parentId
+                        ? "Download transformed transformed image"
+                        : "Download transformed image"}
+                    </span>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Download transformed image</p>
+                  <p>
+                    {transformedImage.parentId
+                      ? "Download transformed transformed image"
+                      : "Download transformed image"}
+                  </p>
                 </TooltipContent>
               </Tooltip>
               <Tooltip>

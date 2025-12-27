@@ -25,6 +25,7 @@ interface TransformedImagesToolbarProps {
   hasActiveFilters: boolean;
   onFiltersChange: (patch: Partial<TransformedImagesFilterState>) => void;
   onClearFilters: () => void;
+  isTransformedTransformedImages?: boolean;
 }
 
 const TransformedImagesToolbar = ({
@@ -34,6 +35,7 @@ const TransformedImagesToolbar = ({
   hasActiveFilters,
   onFiltersChange,
   onClearFilters,
+  isTransformedTransformedImages = false,
 }: TransformedImagesToolbarProps) => {
   const [minSizeInput, setMinSizeInput] = useState(
     formatMegabytes(filters.minSize)
@@ -122,7 +124,13 @@ const TransformedImagesToolbar = ({
             onValueChange={handleSortChange}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Sort transformed images" />
+              <SelectValue
+                placeholder={
+                  isTransformedTransformedImages
+                    ? "Sort transformed transformed images"
+                    : "Sort transformed images"
+                }
+              />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="date-desc">

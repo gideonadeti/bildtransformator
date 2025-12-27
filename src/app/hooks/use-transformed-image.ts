@@ -52,7 +52,7 @@ const useTransformedImage = (id: string) => {
     socket.connect();
 
     const handleSuccess = (transformedTransformedImage: TransformedImage) => {
-      const message = transformedTransformedImage.parentId
+      const message = transformedImageQuery.data?.parentId
         ? "Transformed transformed image transformation completed"
         : "Transformed image transformation completed";
 
@@ -105,7 +105,13 @@ const useTransformedImage = (id: string) => {
       socket.off("transformed-image-transformation-completed", handleSuccess);
       socket.off("transformed-image-transformation-failed", handleFailure);
     };
-  }, [accessToken, id, queryClient, router]);
+  }, [
+    accessToken,
+    id,
+    queryClient,
+    router,
+    transformedImageQuery.data?.parentId,
+  ]);
 
   const transformTransformedImageMutation = useMutation<
     { jobId: string } | TransformedImage,
@@ -130,7 +136,7 @@ const useTransformedImage = (id: string) => {
       onOpenChange(false);
 
       if ("id" in data && "originalImageId" in data) {
-        const message = data.parentId
+        const message = transformedImageQuery.data?.parentId
           ? "Transformed transformed image transformation already exists"
           : "Transformed image transformation already exists";
 

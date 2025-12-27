@@ -287,10 +287,14 @@ const Page = () => {
           </div>
           <div className="py-12 text-center">
             <h1 className="text-2xl font-bold mb-2">
-              Transformed Image Not Found
+              {transformedImageQuery.data?.parentId
+                ? "Transformed Transformed Image Not Found"
+                : "Transformed Image Not Found"}
             </h1>
             <p className="text-muted-foreground">
-              The transformed image you're looking for doesn't exist.
+              {transformedImageQuery.data?.parentId
+                ? "The transformed transformed image you're looking for doesn't exist."
+                : "The transformed image you're looking for doesn't exist."}
             </p>
           </div>
         </div>
@@ -319,7 +323,11 @@ const Page = () => {
         <div className="relative aspect-video w-full rounded-lg overflow-hidden border border-border bg-muted">
           <Image
             src={transformedImage.secureUrl}
-            alt={`Transformed image ${transformedImage.id}`}
+            alt={
+              transformedImage.parentId
+                ? `Transformed transformed image ${transformedImage.id}`
+                : `Transformed image ${transformedImage.id}`
+            }
             fill
             className="object-contain"
             priority
@@ -329,7 +337,11 @@ const Page = () => {
         {/* Image information */}
         <Card>
           <CardHeader>
-            <CardTitle>Transformed Image</CardTitle>
+            <CardTitle>
+              {transformedImage.parentId
+                ? "Transformed Transformed Image"
+                : "Transformed Image"}
+            </CardTitle>
             <CardDescription className="space-y-1">
               <div className="flex flex-wrap gap-4 text-sm">
                 <span>
@@ -414,7 +426,7 @@ const Page = () => {
         {transformedCount > 0 && (
           <div className="space-y-4">
             <h2 className="text-2xl font-semibold">
-              Transformed Images ({transformedCount})
+              Transformed Transformed Images ({transformedCount})
             </h2>
 
             <TransformedImagesToolbar
@@ -424,12 +436,13 @@ const Page = () => {
               hasActiveFilters={hasActiveFilters}
               onFiltersChange={(patch) => updateFilters(patch)}
               onClearFilters={handleClearFilters}
+              isTransformedTransformedImages={true}
             />
 
             {displayedTransformedTransformedImages.length === 0 ? (
               <div className="py-12 text-center">
                 <p className="text-muted-foreground text-lg">
-                  No transformed images found. Try adjusting your filters.
+                  No transformed transformed images found. Try adjusting your filters.
                 </p>
               </div>
             ) : (
