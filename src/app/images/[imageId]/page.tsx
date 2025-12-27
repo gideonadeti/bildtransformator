@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { ArrowLeft, Download, Trash2, Wand2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -34,9 +34,8 @@ const TRANSFORMED_IMAGES_PER_BATCH = 9;
 
 const Page = () => {
   const params = useParams<{ imageId: string }>();
-  const router = useRouter();
   const imageId = params.imageId;
-  const { imagesQuery, deleteImageMutation } = useImages();
+  const { imagesQuery } = useImages();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isTransformDialogOpen, setIsTransformDialogOpen] = useState(false);
 
@@ -142,18 +141,6 @@ const Page = () => {
   const handleClearFilters = () => {
     replaceFiltersInUrl(defaultTransformedImagesFilters);
     reset();
-  };
-
-  const handleDelete = () => {
-    if (!imageId) return;
-
-    deleteImageMutation.mutate({
-      id: imageId,
-      onOpenChange: setIsDeleteDialogOpen,
-      onSuccess: () => {
-        router.push("/images");
-      },
-    });
   };
 
   const handleDownload = async () => {
@@ -368,8 +355,7 @@ const Page = () => {
                       <TransformedImageCard
                         key={transformedImage.id}
                         transformedImage={transformedImage}
-                        originalImageName={image.originalName}
-                      />
+                        originalImageName={image.originalName}/>
                     ))}
                   </div>
 
@@ -393,11 +379,9 @@ const Page = () => {
 
       {/* Delete confirmation dialog */}
       <DeleteImageDialog
+        image={image}
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
-        image={image}
-        onConfirm={handleDelete}
-        isPending={deleteImageMutation.isPending}
       />
 
       {/* Transform dialog */}
