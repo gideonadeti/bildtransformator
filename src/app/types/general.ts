@@ -10,6 +10,7 @@ export type TransformImageFormValues = z.infer<typeof transformImageFormSchema>;
 
 export interface Image {
   id: string;
+  userId: string;
   originalName: string;
   size: number;
   secureUrl: string;
