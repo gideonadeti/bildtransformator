@@ -1,7 +1,15 @@
 "use client";
 
 import { format } from "date-fns";
-import { ArrowLeft, Download, Heart, Trash2, Wand2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Download,
+  Globe,
+  Heart,
+  Lock,
+  Trash2,
+  Wand2,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -37,8 +45,12 @@ const Page = () => {
   const params = useParams<{ imageId: string }>();
   const imageId = params.imageId;
   const { user } = useUser();
-  const { imagesQuery, likeUnlikeImageMutation, downloadImageMutation } =
-    useImages();
+  const {
+    imagesQuery,
+    likeUnlikeImageMutation,
+    downloadImageMutation,
+    togglePublicImageMutation,
+  } = useImages();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isTransformDialogOpen, setIsTransformDialogOpen] = useState(false);
 
@@ -177,6 +189,12 @@ const Page = () => {
   const handleLikeUnlike = () => {
     if (!image) return;
     likeUnlikeImageMutation.mutate({ id: image.id });
+  };
+
+  const handleTogglePublic = () => {
+    if (!image) return;
+
+    togglePublicImageMutation.mutate({ id: image.id });
   };
 
   const handleTransform = () => {
@@ -373,6 +391,13 @@ const Page = () => {
                 strokeWidth={2}
               />
               {isLiked ? "Unlike" : "Like"}
+            </Button>
+            <Button
+              variant={image.isPublic ? "default" : "outline"}
+              onClick={handleTogglePublic}
+            >
+              {image.isPublic ? <Globe size={16} /> : <Lock size={16} />}
+              {image.isPublic ? "Make Private" : "Make Public"}
             </Button>
             <Button variant="outline" onClick={handleDownload}>
               <Download />

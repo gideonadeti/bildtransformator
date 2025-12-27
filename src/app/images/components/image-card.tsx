@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { Download, Eye, Heart, Trash2, Wand2 } from "lucide-react";
+import { Download, Eye, Globe, Heart, Lock, Trash2, Wand2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -36,7 +36,11 @@ const ImageCard = ({
   onDeleteClick = () => {},
 }: ImageCardProps) => {
   const { user } = useUser();
-  const { likeUnlikeImageMutation, downloadImageMutation } = useImages();
+  const {
+    likeUnlikeImageMutation,
+    downloadImageMutation,
+    togglePublicImageMutation,
+  } = useImages();
 
   const handleDownload = async () => {
     try {
@@ -60,6 +64,10 @@ const ImageCard = ({
 
   const handleLikeUnlike = () => {
     likeUnlikeImageMutation.mutate({ id: image.id });
+  };
+
+  const handleTogglePublic = () => {
+    togglePublicImageMutation.mutate({ id: image.id });
   };
 
   const transformedCount = image.transformedImages?.length || 0;
@@ -177,6 +185,27 @@ const ImageCard = ({
             </TooltipTrigger>
             <TooltipContent>
               <p>{isLiked ? "Unlike" : "Like"}</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={image.isPublic ? "default" : "outline"}
+                size="icon"
+                onClick={handleTogglePublic}
+              >
+                {image.isPublic ? (
+                  <Globe size={16} />
+                ) : (
+                  <Lock size={16} />
+                )}
+                <span className="sr-only">
+                  {image.isPublic ? "Make private" : "Make public"}
+                </span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{image.isPublic ? "Make private" : "Make public"}</p>
             </TooltipContent>
           </Tooltip>
           <Tooltip>
