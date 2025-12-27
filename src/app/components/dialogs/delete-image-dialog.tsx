@@ -1,7 +1,8 @@
 "use client";
 
 import useImages from "@/app/hooks/use-images";
-import type { Image as ImageType } from "@/app/types/general";
+import useTransformedImage from "@/app/hooks/use-transformed-image";
+import type { Image, TransformedImage } from "@/app/types/general";
 import {
   Dialog,
   DialogDescription,
@@ -13,7 +14,7 @@ import CustomDialogFooter from "../custom-dialog-footer";
 
 interface DeleteImageDialogProps {
   open: boolean;
-  image: ImageType | null;
+  image: Image | TransformedImage | null;
   onOpenChange: (open: boolean) => void;
 }
 
@@ -23,14 +24,28 @@ const DeleteImageDialog = ({
   onOpenChange,
 }: DeleteImageDialogProps) => {
   const { deleteImageMutation } = useImages();
+  const isTransformedImage = image && "originalImageId" in image;
+  const { deleteTransformedImageMutation } = useTransformedImage(
+    isTransformedImage ? image.id : ""
+  );
+
+  const isPending =
+    deleteImageMutation.isPending || deleteTransformedImageMutation.isPending;
 
   const handleConfirm = () => {
     if (!image) return;
 
-    deleteImageMutation.mutate({
-      id: image.id,
-      onOpenChange,
-    });
+    if (isTransformedImage) {
+      deleteTransformedImageMutation.mutate({
+        id: image.id,
+        onOpenChange,
+      });
+    } else {
+      deleteImageMutation.mutate({
+        id: image.id,
+        onOpenChange,
+      });
+    }
   };
 
   const handleCancel = () => {
@@ -41,19 +56,27 @@ const DeleteImageDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <CustomDialogContent>
         <DialogHeader>
-          <DialogTitle>Delete Image</DialogTitle>
+          <DialogTitle>
+            {isTransformedImage
+              ? image.parentId
+                ? "Delete Transformed Transformed Image"
+                : "Delete Transformed Image"
+              : "Delete Image"}
+          </DialogTitle>
           <DialogDescription>
             Are you sure you want to delete{" "}
-            <span className="font-semibold text-foreground">
-              {image?.originalName || "this image"}
-            </span>
+            {isTransformedImage
+              ? image.parentId
+                ? "this transformed transformed image"
+                : "this transformed image"
+              : image?.originalName}
             ? This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <CustomDialogFooter
           normalText="Delete"
           pendingText="Deleting..."
-          isPending={deleteImageMutation.isPending}
+          isPending={isPending}
           variant={{ variant: "destructive" }}
           handleCancel={handleCancel}
           handleSubmit={handleConfirm}
