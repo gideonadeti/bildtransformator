@@ -472,6 +472,7 @@ const Page = () => {
           id: transformedImage.id,
           secureUrl: transformedImage.secureUrl,
           originalName: originalImageName,
+          parentId: transformedImage.parentId,
         }}
         isTransformedImage={true}
       />

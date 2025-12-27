@@ -52,7 +52,11 @@ const useTransformedImage = (id: string) => {
     socket.connect();
 
     const handleSuccess = (transformedTransformedImage: TransformedImage) => {
-      toast.success("Transformed image transformation completed", {
+      const message = transformedTransformedImage.parentId
+        ? "Transformed transformed image transformation completed"
+        : "Transformed image transformation completed";
+
+      toast.success(message, {
         id: "transformed-image-transformation-completed",
         action: {
           label: "View",
@@ -126,7 +130,11 @@ const useTransformedImage = (id: string) => {
       onOpenChange(false);
 
       if ("id" in data && "originalImageId" in data) {
-        toast.success("Transformed image transformation already exists", {
+        const message = data.parentId
+          ? "Transformed transformed image transformation already exists"
+          : "Transformed image transformation already exists";
+
+        toast.success(message, {
           id: "transform-transformed-image-already-exists",
           action: {
             label: "View",
@@ -136,7 +144,11 @@ const useTransformedImage = (id: string) => {
           },
         });
       } else {
-        toast.success("Transformed image transformation started", {
+        const message = transformedImageQuery.data?.parentId
+          ? "Transformed transformed image transformation started"
+          : "Transformed image transformation started";
+
+        toast.success(message, {
           id: "transform-transformed-image-started",
         });
       }
@@ -163,7 +175,11 @@ const useTransformedImage = (id: string) => {
     onSuccess: (deletedTransformedImage, { onOpenChange }) => {
       onOpenChange(false);
 
-      toast.success("Transformed image deleted successfully", {
+      const message = deletedTransformedImage.parentId
+        ? "Transformed transformed image deleted successfully"
+        : "Transformed image deleted successfully";
+
+      toast.success(message, {
         id: "delete-transformed-image-success",
       });
 

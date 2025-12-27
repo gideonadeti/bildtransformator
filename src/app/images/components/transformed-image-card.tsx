@@ -42,12 +42,20 @@ const TransformedImageCard = ({
 
       await downloadImage(transformedImage.secureUrl, transformedFilename);
 
-      toast.success("Transformed image downloaded successfully", {
+      const successMessage = transformedImage.parentId
+        ? "Transformed transformed image downloaded successfully"
+        : "Transformed image downloaded successfully";
+
+      toast.success(successMessage, {
         id: `download-success-${transformedImage.id}`,
       });
     } catch (error) {
-      console.error("Failed to download transformed image:", error);
-      toast.error("Failed to download transformed image", {
+      const errorMessage = transformedImage.parentId
+        ? "Failed to download transformed transformed image"
+        : "Failed to download transformed image";
+
+      console.error(errorMessage, ":", error);
+      toast.error(errorMessage, {
         description: "Please try again later",
         id: `download-error-${transformedImage.id}`,
       });
@@ -190,6 +198,7 @@ const TransformedImageCard = ({
             id: transformedImage.id,
             secureUrl: transformedImage.secureUrl,
             originalName: originalImageName,
+            parentId: transformedImage.parentId,
           }}
           isTransformedImage={true}
         />
