@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
+import { socket } from "@/lib/socket";
 import type {
   Image,
   TransformedImage,
@@ -35,6 +36,64 @@ const useImages = () => {
       toast.error(message, { id: "fetch-images-error" });
     }
   }, [imagesQuery.error?.response?.data, imagesQuery.isError]);
+
+  useEffect(() => {
+    if (!accessToken) {
+      return;
+    }
+
+    socket.auth = { token: accessToken };
+    socket.connect();
+
+    const handleSuccess = (transformedImage: TransformedImage) => {
+      toast.success("Image transformation completed", {
+        id: "image-transformation-completed",
+        action: {
+          label: "View",
+          onClick: () => {
+            router.push(
+              `/images/${transformedImage.originalImageId}#${transformedImage.id}`
+            );
+          },
+        },
+      });
+
+      queryClient.setQueryData<Image[]>(["images"], (oldImages) => {
+        if (!oldImages) return oldImages;
+
+        return oldImages.map((image) => {
+          if (image.id !== transformedImage.originalImageId) {
+            return image;
+          }
+
+          const exists = image.transformedImages.some(
+            (img) => img.id === transformedImage.id
+          );
+
+          if (exists) {
+            return image;
+          }
+
+          return {
+            ...image,
+            transformedImages: [...image.transformedImages, transformedImage],
+          };
+        });
+      });
+    };
+
+    const handleFailure = (err: { message: string }) => {
+      toast.error(err.message, { id: "image-transformation-failed" });
+    };
+
+    socket.on("image-transformation-completed", handleSuccess);
+    socket.on("image-transformation-failed", handleFailure);
+
+    return () => {
+      socket.off("image-transformation-completed", handleSuccess);
+      socket.off("image-transformation-failed", handleFailure);
+    };
+  }, [accessToken, queryClient, router]);
 
   const uploadImageMutation = useMutation<
     Image,

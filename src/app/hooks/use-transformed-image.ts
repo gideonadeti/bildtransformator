@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
+import { socket } from "@/lib/socket";
 import type {
   Image,
   TransformedImage,
@@ -41,6 +42,66 @@ const useTransformedImage = (id: string) => {
     transformedImageQuery.error?.response?.data,
     transformedImageQuery.isError,
   ]);
+
+  useEffect(() => {
+    if (!accessToken || !id) {
+      return;
+    }
+
+    socket.auth = { token: accessToken };
+    socket.connect();
+
+    const handleSuccess = (transformedTransformedImage: TransformedImage) => {
+      toast.success("Transformed image transformation completed", {
+        id: "transformed-image-transformation-completed",
+        action: {
+          label: "View",
+          onClick: () => {
+            router.push(
+              `/transformed-images/${transformedTransformedImage.parentId}#${transformedTransformedImage.id}`
+            );
+          },
+        },
+      });
+
+      queryClient.setQueryData<TransformedImage>(
+        ["transformed-images", transformedTransformedImage.parentId],
+        (oldData) => {
+          if (!oldData) return oldData;
+
+          // Only add if it doesn't already exist
+          // Because of the socket
+          const exists = oldData.transformedTransformedImages.some(
+            (img) => img.id === transformedTransformedImage.id
+          );
+
+          if (exists) return oldData;
+
+          return {
+            ...oldData,
+            transformedTransformedImages: [
+              ...oldData.transformedTransformedImages,
+              transformedTransformedImage,
+            ],
+          };
+        }
+      );
+    };
+
+    const handleFailure = (err: { message: string }) => {
+      toast.error(err.message, {
+        id: "transformed-image-transformation-failed",
+      });
+    };
+
+    socket.on("transformed-image-transformation-completed", handleSuccess);
+    socket.on("transformed-image-transformation-failed", handleFailure);
+
+    return () => {
+      socket.off("transformed-image-transformation-completed", handleSuccess);
+      socket.off("transformed-image-transformation-failed", handleFailure);
+    };
+  }, [accessToken, id, queryClient, router]);
 
   const transformTransformedImageMutation = useMutation<
     { jobId: string } | TransformedImage,
