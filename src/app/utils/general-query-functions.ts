@@ -133,3 +133,16 @@ export const downloadImage = async (id: string) => {
     throw error;
   }
 };
+
+// Toggle the public status of an image
+export const togglePublicImage = async (id: string) => {
+  try {
+    const response = await axios.patch(`/images/${id}/toggle-public`);
+
+    return response.data;
+  } catch (error) {
+    console.error("Error from `togglePublicImage`:", error);
+
+    throw error;
+  }
+};

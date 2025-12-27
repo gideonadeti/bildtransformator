@@ -16,6 +16,7 @@ import {
   downloadImage,
   fetchImages,
   likeUnlikeImage,
+  togglePublicImage,
   transformImage,
   uploadImage,
 } from "../utils/general-query-functions";
@@ -332,6 +333,54 @@ const useImages = () => {
     },
   });
 
+  const togglePublicImageMutation = useMutation<
+    Image,
+    AxiosError<{ message: string }>,
+    { id: string },
+    { previousImages: Image[] | undefined }
+  >({
+    mutationFn: async ({ id }) => {
+      return togglePublicImage(id);
+    },
+    onMutate: async ({ id }, context) => {
+      await context.client.cancelQueries({ queryKey: ["images"] });
+
+      const previousImages = context.client.getQueryData<Image[]>(["images"]);
+
+      // Optimistically toggle isPublic
+      context.client.setQueryData<Image[]>(["images"], (oldImages) => {
+        if (!oldImages) return oldImages;
+
+        return oldImages.map((image) => {
+          if (image.id === id) {
+            return { ...image, isPublic: !image.isPublic };
+          }
+
+          return image;
+        });
+      });
+
+      return { previousImages };
+    },
+    onError: (error, _variables, onMutateResult, _context) => {
+      const message =
+        error.response?.data?.message || "Failed to toggle image public status";
+
+      toast.error(message, { id: "toggle-public-image-error" });
+
+      // Restore previous images data if available
+      if (onMutateResult?.previousImages) {
+        queryClient.setQueryData<Image[]>(
+          ["images"],
+          onMutateResult.previousImages
+        );
+      }
+    },
+    onSettled: (_data, _error, _variables, _onMutateResult, context) => {
+      context.client.invalidateQueries({ queryKey: ["images"] });
+    },
+  });
+
   return {
     imagesQuery,
     uploadImageMutation,
@@ -339,6 +388,7 @@ const useImages = () => {
     deleteImageMutation,
     likeUnlikeImageMutation,
     downloadImageMutation,
+    togglePublicImageMutation,
   };
 };
 

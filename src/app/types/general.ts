@@ -15,6 +15,7 @@ export interface Image {
   secureUrl: string;
   format: string;
   downloadsCount: number;
+  isPublic: boolean;
   createdAt: string;
   updatedAt: string;
 
@@ -29,6 +30,7 @@ export interface TransformedImage {
   secureUrl: string;
   parentId: string | null;
   downloadsCount: number;
+  isPublic: boolean;
   createdAt: string;
   updatedAt: string;
 
