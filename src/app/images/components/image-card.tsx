@@ -36,6 +36,7 @@ const ImageCard = ({
   onDeleteClick = () => {},
 }: ImageCardProps) => {
   const { user } = useUser();
+  const isOwner = user?.id === image.userId;
   const {
     likeUnlikeImageMutation,
     downloadImageMutation,
@@ -147,7 +148,11 @@ const ImageCard = ({
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="outline" size="icon" asChild>
-                <Link href={`/images/${image.id}`}>
+                <Link
+                  href={`/${image.isPublic ? "public-images" : "images"}/${
+                    image.id
+                  }`}
+                >
                   <Eye />
                   <span className="sr-only">View</span>
                 </Link>
@@ -157,57 +162,63 @@ const ImageCard = ({
               <p>View</p>
             </TooltipContent>
           </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="default" size="icon" onClick={onTransformClick}>
-                <Wand2 />
-                <span className="sr-only">Transform</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Transform</p>
-            </TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={isLiked ? "default" : "outline"}
-                size="icon"
-                onClick={handleLikeUnlike}
-              >
-                <Heart
-                  className={isLiked ? "fill-current" : ""}
-                  size={16}
-                  strokeWidth={2}
-                />
-                <span className="sr-only">{isLiked ? "Unlike" : "Like"}</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{isLiked ? "Unlike" : "Like"}</p>
-            </TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant={image.isPublic ? "default" : "outline"}
-                size="icon"
-                onClick={handleTogglePublic}
-              >
-                {image.isPublic ? (
-                  <Globe size={16} />
-                ) : (
-                  <Lock size={16} />
-                )}
-                <span className="sr-only">
-                  {image.isPublic ? "Make private" : "Make public"}
-                </span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{image.isPublic ? "Make private" : "Make public"}</p>
-            </TooltipContent>
-          </Tooltip>
+          {isOwner && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="default"
+                  size="icon"
+                  onClick={onTransformClick}
+                >
+                  <Wand2 />
+                  <span className="sr-only">Transform</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Transform</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
+          {user && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={isLiked ? "default" : "outline"}
+                  size="icon"
+                  onClick={handleLikeUnlike}
+                >
+                  <Heart
+                    className={isLiked ? "fill-current" : ""}
+                    size={16}
+                    strokeWidth={2}
+                  />
+                  <span className="sr-only">{isLiked ? "Unlike" : "Like"}</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{isLiked ? "Unlike" : "Like"}</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
+          {isOwner && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant={image.isPublic ? "default" : "outline"}
+                  size="icon"
+                  onClick={handleTogglePublic}
+                >
+                  {image.isPublic ? <Globe size={16} /> : <Lock size={16} />}
+                  <span className="sr-only">
+                    {image.isPublic ? "Make private" : "Make public"}
+                  </span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{image.isPublic ? "Make private" : "Make public"}</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="outline" size="icon" onClick={handleDownload}>
@@ -219,17 +230,23 @@ const ImageCard = ({
               <p>Download</p>
             </TooltipContent>
           </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="destructive" size="icon" onClick={onDeleteClick}>
-                <Trash2 />
-                <span className="sr-only">Delete</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Delete</p>
-            </TooltipContent>
-          </Tooltip>
+          {isOwner && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  onClick={onDeleteClick}
+                >
+                  <Trash2 />
+                  <span className="sr-only">Delete</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Delete</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
         </div>
       </CardContent>
     </Card>
