@@ -304,15 +304,22 @@ const useImages = () => {
     boolean,
     AxiosError<{ message: string }>,
     { id: string },
-    { previousImages: Image[] | undefined }
+    {
+      previousImages: Image[] | undefined;
+      previousPublicImages: Image[] | undefined;
+    }
   >({
     mutationFn: async ({ id }) => {
       return downloadImage(id);
     },
     onMutate: async ({ id }, context) => {
       await context.client.cancelQueries({ queryKey: ["images"] });
+      await context.client.cancelQueries({ queryKey: ["public-images"] });
 
       const previousImages = context.client.getQueryData<Image[]>(["images"]);
+      const previousPublicImages = context.client.getQueryData<Image[]>([
+        "public-images",
+      ]);
 
       // Optimistically increment downloadsCount
       context.client.setQueryData<Image[]>(["images"], (oldImages) => {
@@ -327,7 +334,22 @@ const useImages = () => {
         });
       });
 
-      return { previousImages };
+      context.client.setQueryData<Image[]>(
+        ["public-images"],
+        (oldPublicImages) => {
+          if (!oldPublicImages) return oldPublicImages;
+
+          return oldPublicImages.map((image) => {
+            if (image.id === id) {
+              return { ...image, downloadsCount: image.downloadsCount + 1 };
+            }
+
+            return image;
+          });
+        }
+      );
+
+      return { previousImages, previousPublicImages };
     },
     onError: (error, _variables, onMutateResult, _context) => {
       const message =
@@ -342,9 +364,17 @@ const useImages = () => {
           onMutateResult.previousImages
         );
       }
+
+      if (onMutateResult?.previousPublicImages) {
+        queryClient.setQueryData<Image[]>(
+          ["public-images"],
+          onMutateResult.previousPublicImages
+        );
+      }
     },
     onSettled: (_data, _error, _variables, _onMutateResult, context) => {
       context.client.invalidateQueries({ queryKey: ["images"] });
+      context.client.invalidateQueries({ queryKey: ["public-images"] });
     },
   });
 
