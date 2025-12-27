@@ -309,7 +309,7 @@ const Page = () => {
 
           {/* Action buttons */}
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" onClick={handleTransform}>
+            <Button onClick={handleTransform}>
               <Wand2 />
               Transform
             </Button>
@@ -355,7 +355,8 @@ const Page = () => {
                       <TransformedImageCard
                         key={transformedImage.id}
                         transformedImage={transformedImage}
-                        originalImageName={image.originalName}/>
+                        originalImageName={image.originalName}
+                      />
                     ))}
                   </div>
 
