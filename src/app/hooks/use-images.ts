@@ -233,8 +233,7 @@ const useImages = () => {
     AxiosError<{ message: string }>,
     {
       id: string;
-      onOpenChange?: (open: boolean) => void;
-      onSuccess?: () => void;
+      onOpenChange: (open: boolean) => void;
     }
   >({
     mutationFn: async ({ id }) => {
@@ -245,8 +244,8 @@ const useImages = () => {
 
       toast.error(message, { id: "delete-image-error" });
     },
-    onSuccess: (deletedImage, { onOpenChange, onSuccess }) => {
-      onOpenChange?.(false);
+    onSuccess: (deletedImage, { onOpenChange }) => {
+      onOpenChange(false);
 
       toast.success("Image deleted successfully", {
         id: "delete-image-success",
@@ -257,16 +256,7 @@ const useImages = () => {
         oldImages.filter((img) => img.id !== deletedImage.id)
       );
 
-      // Remove from transformed images query cache if it was a transformed image
-      queryClient.setQueryData(
-        ["transformed-images"],
-        (oldTransformedImages: TransformedImage[]) =>
-          oldTransformedImages.filter(
-            (img) => img.originalImageId !== deletedImage.id
-          )
-      );
-
-      onSuccess?.();
+      router.push("/images");
     },
   });
 

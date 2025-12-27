@@ -1,5 +1,6 @@
 "use client";
 
+import useImages from "@/app/hooks/use-images";
 import type { Image as ImageType } from "@/app/types/general";
 import {
   Dialog,
@@ -14,19 +15,22 @@ interface DeleteImageDialogProps {
   open: boolean;
   image: ImageType | null;
   onOpenChange: (open: boolean) => void;
-  onConfirm?: () => void;
-  isPending?: boolean;
 }
 
 const DeleteImageDialog = ({
   open,
   image,
   onOpenChange,
-  onConfirm = () => {},
-  isPending = false,
 }: DeleteImageDialogProps) => {
+  const { deleteImageMutation } = useImages();
+
   const handleConfirm = () => {
-    onConfirm();
+    if (!image) return;
+
+    deleteImageMutation.mutate({
+      id: image.id,
+      onOpenChange,
+    });
   };
 
   const handleCancel = () => {
@@ -49,7 +53,7 @@ const DeleteImageDialog = ({
         <CustomDialogFooter
           normalText="Delete"
           pendingText="Deleting..."
-          isPending={isPending}
+          isPending={deleteImageMutation.isPending}
           variant={{ variant: "destructive" }}
           handleCancel={handleCancel}
           handleSubmit={handleConfirm}

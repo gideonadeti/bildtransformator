@@ -21,7 +21,7 @@ import ImagesToolbar from "./components/images-toolbar";
 const IMAGES_PER_BATCH = 9;
 
 const Page = () => {
-  const { imagesQuery, deleteImageMutation } = useImages();
+  const { imagesQuery } = useImages();
   const images = imagesQuery.data || [];
   const [isUploadImageDialogOpen, setIsUploadImageDialogOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<ImageType | null>(null);
@@ -118,18 +118,6 @@ const Page = () => {
   const handleDeleteClick = (image: ImageType) => {
     setImageToDelete(image);
     setIsDeleteDialogOpen(true);
-  };
-
-  const handleDeleteConfirm = () => {
-    if (!imageToDelete) return;
-
-    deleteImageMutation.mutate({
-      id: imageToDelete.id,
-      onOpenChange: setIsDeleteDialogOpen,
-      onSuccess: () => {
-        setImageToDelete(null);
-      },
-    });
   };
 
   if (imagesQuery.isPending) {
@@ -281,8 +269,6 @@ const Page = () => {
           }
         }}
         image={imageToDelete}
-        onConfirm={handleDeleteConfirm}
-        isPending={deleteImageMutation.isPending}
       />
     </>
   );
