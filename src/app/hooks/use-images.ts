@@ -217,29 +217,40 @@ const useImages = () => {
     boolean,
     AxiosError<{ message: string }>,
     { id: string },
-    { previousImages: Image[] | undefined }
+    {
+      previousImages: Image[] | undefined;
+      previousPublicImages: Image[] | undefined;
+    }
   >({
     mutationFn: async ({ id }) => {
       return likeUnlikeImage(id);
     },
     onMutate: async ({ id }, context) => {
       await context.client.cancelQueries({ queryKey: ["images"] });
+      await context.client.cancelQueries({ queryKey: ["public-images"] });
 
       const previousImages = context.client.getQueryData<Image[]>(["images"]);
+      const previousPublicImages = context.client.getQueryData<Image[]>([
+        "public-images",
+      ]);
 
       if (!user) {
-        return { previousImages };
+        return { previousImages, previousPublicImages };
       }
 
-      const existingLike = previousImages
-        ?.find((image) => image.id === id)
-        ?.likes.find((like) => like.userId === user.id);
+      const updateImageLikes = (oldImages: Image[] | undefined) => {
+        if (!oldImages) return oldImages;
 
-      if (existingLike) {
-        // Unlike: remove the existing like
-        context.client.setQueryData<Image[]>(["images"], (oldImages) => {
-          if (!oldImages) return oldImages;
+        const targetImage = oldImages.find((image) => image.id === id);
 
+        if (!targetImage) return oldImages;
+
+        const existingLike = targetImage.likes.find(
+          (like) => like.userId === user.id
+        );
+
+        if (existingLike) {
+          // Unlike: remove the existing like
           return oldImages.map((image) => {
             if (image.id !== id) {
               return image;
@@ -250,12 +261,8 @@ const useImages = () => {
               likes: image.likes.filter((like) => like.id !== existingLike.id),
             };
           });
-        });
-      } else {
-        // Like: add a new like
-        context.client.setQueryData<Image[]>(["images"], (oldImages) => {
-          if (!oldImages) return oldImages;
-
+        } else {
+          // Like: add a new like
           return oldImages.map((image) => {
             if (image.id !== id) {
               return image;
@@ -276,10 +283,14 @@ const useImages = () => {
               ],
             };
           });
-        });
-      }
+        }
+      };
 
-      return { previousImages };
+      // Update both queries
+      context.client.setQueryData<Image[]>(["images"], updateImageLikes);
+      context.client.setQueryData<Image[]>(["public-images"], updateImageLikes);
+
+      return { previousImages, previousPublicImages };
     },
     onError: (error, _variables, onMutateResult, _context) => {
       const message =
@@ -294,9 +305,18 @@ const useImages = () => {
           onMutateResult.previousImages
         );
       }
+
+      // Restore previous public images data if available
+      if (onMutateResult?.previousPublicImages) {
+        queryClient.setQueryData<Image[]>(
+          ["public-images"],
+          onMutateResult.previousPublicImages
+        );
+      }
     },
     onSettled: (_data, _error, _variables, _onMutateResult, context) => {
       context.client.invalidateQueries({ queryKey: ["images"] });
+      context.client.invalidateQueries({ queryKey: ["public-images"] });
     },
   });
 
