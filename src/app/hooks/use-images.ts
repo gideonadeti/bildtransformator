@@ -14,6 +14,7 @@ import {
   deleteImage,
   downloadImage,
   fetchImages,
+  fetchPublicImages,
   likeUnlikeImage,
   togglePublicImage,
   transformImage,
@@ -33,6 +34,11 @@ const useImages = () => {
     enabled: !!accessToken,
   });
 
+  const publicImagesQuery = useQuery<Image[], AxiosError<{ message: string }>>({
+    queryKey: ["public-images"],
+    queryFn: async () => await fetchPublicImages(),
+  });
+
   useEffect(() => {
     if (imagesQuery.isError) {
       const message =
@@ -41,6 +47,16 @@ const useImages = () => {
       toast.error(message, { id: "fetch-images-error" });
     }
   }, [imagesQuery.error?.response?.data, imagesQuery.isError]);
+
+  useEffect(() => {
+    if (publicImagesQuery.isError) {
+      const message =
+        publicImagesQuery.error?.response?.data?.message ||
+        "Failed to fetch public images";
+
+      toast.error(message, { id: "fetch-public-images-error" });
+    }
+  }, [publicImagesQuery.error?.response?.data, publicImagesQuery.isError]);
 
   useEffect(() => {
     if (!accessToken) {
@@ -382,6 +398,7 @@ const useImages = () => {
 
   return {
     imagesQuery,
+    publicImagesQuery,
     uploadImageMutation,
     transformImageMutation,
     deleteImageMutation,

@@ -28,6 +28,18 @@ export const fetchImages = async () => {
   }
 };
 
+export const fetchPublicImages = async () => {
+  try {
+    const response = await axios.get("/images/public");
+
+    return response.data;
+  } catch (error) {
+    console.error("Error from `fetchPublicImages`:", error);
+
+    throw error;
+  }
+};
+
 export const fetchTransformedImages = async () => {
   try {
     const response = await axios.get("/transformed-images");
