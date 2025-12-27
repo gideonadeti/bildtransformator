@@ -7,12 +7,15 @@ import { toast } from "sonner";
 import { socket } from "@/lib/socket";
 import type {
   Image,
+  Like,
   TransformedImage,
   TransformImageFormValues,
 } from "../types/general";
 import {
   deleteImage,
+  downloadImage,
   fetchImages,
+  likeUnlikeImage,
   transformImage,
   uploadImage,
 } from "../utils/general-query-functions";
@@ -192,11 +195,85 @@ const useImages = () => {
     },
   });
 
+  const likeUnlikeImageMutation = useMutation<
+    Like & { action: "liked" | "unliked" },
+    AxiosError<{ message: string }>,
+    { id: string }
+  >({
+    mutationFn: async ({ id }) => {
+      return likeUnlikeImage(id);
+    },
+    onError: (error) => {
+      const message =
+        error.response?.data?.message || "Failed to like or unlike image";
+
+      toast.error(message, { id: "like-unlike-image-error" });
+    },
+    onSuccess: (data) => {
+      // Update the images query cache optimistically
+      queryClient.setQueryData<Image[]>(["images"], (oldImages) => {
+        if (!oldImages) return oldImages;
+
+        if (data.action === "liked") {
+          return oldImages.map((image) => {
+            if (image.id !== data.imageId) {
+              return image;
+            }
+
+            return { ...image, likes: [...image.likes, data] };
+          });
+        } else {
+          return oldImages.map((image) => {
+            if (image.id !== data.imageId) {
+              return image;
+            }
+
+            return {
+              ...image,
+              likes: image.likes.filter((like) => like.id !== data.id),
+            };
+          });
+        }
+      });
+    },
+  });
+
+  const downloadImageMutation = useMutation<
+    boolean,
+    AxiosError<{ message: string }>,
+    { id: string }
+  >({
+    mutationFn: async ({ id }) => {
+      return downloadImage(id);
+    },
+    onError: (error) => {
+      const message =
+        error.response?.data?.message || "Failed to download image";
+
+      toast.error(message, { id: "download-image-error" });
+    },
+    onSuccess: (_, { id }) => {
+      queryClient.setQueryData<Image[]>(["images"], (oldImages) => {
+        if (!oldImages) return oldImages;
+
+        return oldImages.map((image) => {
+          if (image.id === id) {
+            return { ...image, downloadsCount: image.downloadsCount + 1 };
+          }
+
+          return image;
+        });
+      });
+    },
+  });
+
   return {
     imagesQuery,
     uploadImageMutation,
     transformImageMutation,
     deleteImageMutation,
+    likeUnlikeImageMutation,
+    downloadImageMutation,
   };
 };
 
