@@ -225,11 +225,11 @@ const Page = () => {
           </Card>
 
           {/* Action buttons skeleton */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 w-full">
             <Skeleton className="h-9 w-28" />
             <Skeleton className="h-9 w-28" />
-            <Skeleton className="h-9 w-40" />
             <Skeleton className="h-9 w-28" />
+            <Skeleton className="h-9 w-40 ms-auto" />
           </div>
 
           {/* Transformed transformed images section skeleton */}
@@ -374,7 +374,7 @@ const Page = () => {
         </Card>
 
         {/* Action buttons */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 w-full">
           <Button onClick={handleTransform}>
             <Wand2 />
             Transform
@@ -383,9 +383,16 @@ const Page = () => {
             <Download />
             Download
           </Button>
+          <Button
+            variant="destructive"
+            onClick={() => setIsDeleteDialogOpen(true)}
+          >
+            <Trash2 />
+            Delete
+          </Button>
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline">
+              <Button variant="outline" className="ms-auto">
                 <Code2 />
                 View Transformation
               </Button>
@@ -401,13 +408,6 @@ const Page = () => {
               </div>
             </PopoverContent>
           </Popover>
-          <Button
-            variant="destructive"
-            onClick={() => setIsDeleteDialogOpen(true)}
-          >
-            <Trash2 />
-            Delete
-          </Button>
         </div>
 
         {/* Transformed transformed images section */}
