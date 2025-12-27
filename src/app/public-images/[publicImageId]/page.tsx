@@ -386,17 +386,19 @@ const Page = () => {
                 Transform
               </Button>
             )}
-            <Button
-              variant={isLiked ? "default" : "outline"}
-              onClick={handleLikeUnlike}
-            >
-              <Heart
-                className={isLiked ? "fill-current" : ""}
-                size={16}
-                strokeWidth={2}
-              />
-              {isLiked ? "Unlike" : "Like"}
-            </Button>
+            {user && (
+              <Button
+                variant={isLiked ? "default" : "outline"}
+                onClick={handleLikeUnlike}
+              >
+                <Heart
+                  className={isLiked ? "fill-current" : ""}
+                  size={16}
+                  strokeWidth={2}
+                />
+                {isLiked ? "Unlike" : "Like"}
+              </Button>
+            )}
             {isOwner && (
               <Button
                 variant={image.isPublic ? "default" : "outline"}
