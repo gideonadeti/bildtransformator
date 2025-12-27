@@ -69,19 +69,28 @@ const setupGlobalListeners = (
 
   globalCompletedHandler = (transformedImage: TransformedImage) => {
     // Update query cache once (only one listener ensures this runs once)
-    if (globalQueryClient) {
-      globalQueryClient.setQueryData(["images"], (oldImages: Image[]) =>
-        oldImages.map((image) =>
-          image.id === transformedImage.originalImageId
-            ? {
-                ...image,
-                transformedImages: [
-                  ...image.transformedImages,
-                  transformedImage,
-                ],
-              }
-            : image
-        )
+    // Only add direct transformations (parentId === null) to the original image's array
+    // Nested transformations should only be added to their parent's transformedTransformedImages array
+    if (globalQueryClient && transformedImage.parentId === null) {
+      globalQueryClient.setQueryData(
+        ["images"],
+        (oldImages: Image[] | undefined) => {
+          if (!oldImages) return oldImages;
+
+          return oldImages.map((image) =>
+            image.id === transformedImage.originalImageId
+              ? {
+                  ...image,
+                  transformedImages: [
+                    ...(image.transformedImages || []).filter(
+                      (ti) => ti.id !== transformedImage.id
+                    ),
+                    transformedImage,
+                  ],
+                }
+              : image
+          );
+        }
       );
     }
 
@@ -105,6 +114,9 @@ const setupGlobalListeners = (
     });
   };
 
+  // Register listeners immediately
+  socket.off("image-transformation-completed", globalCompletedHandler);
+  socket.off("image-transformation-failed", globalFailedHandler);
   socket.on("image-transformation-completed", globalCompletedHandler);
   socket.on("image-transformation-failed", globalFailedHandler);
 };
@@ -132,34 +144,56 @@ const useImages = () => {
   useEffect(() => {
     if (!socket) return;
 
+    // Setup global listeners - this ensures listeners are registered
     setupGlobalListeners(socket, queryClient);
 
     const handleTransformationCompleted = (
       transformedImage: TransformedImage
     ) => {
-      toast.success("Image transformation completed", {
-        id: "image-transformation-completed",
-        action: {
-          label: "View",
-          onClick: () => {
-            router.push(
-              `/images/${transformedImage.originalImageId}#${transformedImage.id}`
-            );
+      // Only show toast for direct transformations (parentId === null)
+      // Nested transformations are handled by use-transformed-image hook
+      if (transformedImage.parentId === null) {
+        toast.success("Image transformation completed", {
+          id: "image-transformation-completed",
+          action: {
+            label: "View",
+            onClick: () => {
+              router.push(
+                `/images/${transformedImage.originalImageId}#${transformedImage.id}`
+              );
+            },
           },
-        },
-      });
+        });
+      }
     };
 
     const handleTransformationFailed = (error: { message: string }) => {
       toast.error(error.message, { id: "image-transformation-failed" });
     };
 
+    // Register callbacks
     transformationCallbacks.add(handleTransformationCompleted);
     transformationFailedCallbacks.add(handleTransformationFailed);
+
+    // Re-register listeners on connect/reconnect to handle connection issues
+    // This ensures listeners are always registered even if socket reconnects
+    const handleConnect = () => {
+      // Re-setup listeners with current socket instance
+      setupGlobalListeners(socket, queryClient);
+    };
+
+    // Register connect handler
+    socket.on("connect", handleConnect);
+
+    // If already connected, ensure listeners are registered
+    if (socket.connected) {
+      handleConnect();
+    }
 
     return () => {
       transformationCallbacks.delete(handleTransformationCompleted);
       transformationFailedCallbacks.delete(handleTransformationFailed);
+      socket.off("connect", handleConnect);
     };
   }, [socket, queryClient, router]);
 
