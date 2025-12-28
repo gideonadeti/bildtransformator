@@ -22,7 +22,7 @@ import {
 import useTransformedImage from "../../hooks/use-transformed-image";
 import useUser from "../../hooks/use-user";
 import type { TransformedImage } from "../../types/general";
-import { formatBytes } from "../../utils/format";
+import { formatBytes, formatNumber } from "../../utils/format";
 import { downloadImage } from "../../utils/image-utils";
 
 interface TransformedImageCardProps {
@@ -37,9 +37,10 @@ const TransformedImageCard = ({
   const [isTransformDialogOpen, setIsTransformDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { user } = useUser();
-  const { likeUnlikeTransformedImageMutation } = useTransformedImage(
-    transformedImage.id
-  );
+  const {
+    likeUnlikeTransformedImageMutation,
+    downloadTransformedImageMutation,
+  } = useTransformedImage(transformedImage.id);
 
   const likesCount = transformedImage.likes?.length || 0;
   const isLiked = user
@@ -54,6 +55,10 @@ const TransformedImageCard = ({
     try {
       const [name, extension] = originalImageName.split(".");
       const transformedFilename = `transformed-${name}.${extension}`;
+
+      await downloadTransformedImageMutation.mutateAsync({
+        id: transformedImage.id,
+      });
 
       await downloadImage(transformedImage.secureUrl, transformedFilename);
 
@@ -101,9 +106,33 @@ const TransformedImageCard = ({
               <span className="font-medium">Created:</span>{" "}
               {format(new Date(transformedImage.createdAt), "PPp")}
             </div>
-            {likesCount > 0 && (
-              <div>
-                <span className="font-medium">Likes:</span> {likesCount}
+            {(likesCount > 0 || transformedImage.downloadsCount > 0) && (
+              <div className="text-xs">
+                <span className="inline-flex items-center gap-1.5">
+                  {likesCount > 0 && (
+                    <>
+                      <Heart className="inline size-3" />
+                      <span>
+                        {formatNumber(likesCount)}{" "}
+                        {likesCount === 1 ? "like" : "likes"}
+                      </span>
+                    </>
+                  )}
+                  {likesCount > 0 && transformedImage.downloadsCount > 0 && (
+                    <span className="mx-1">•</span>
+                  )}
+                  {transformedImage.downloadsCount > 0 && (
+                    <>
+                      <Download className="inline size-3" />
+                      <span>
+                        {formatNumber(transformedImage.downloadsCount)}{" "}
+                        {transformedImage.downloadsCount === 1
+                          ? "download"
+                          : "downloads"}
+                      </span>
+                    </>
+                  )}
+                </span>
               </div>
             )}
           </div>

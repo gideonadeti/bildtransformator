@@ -21,7 +21,7 @@ import { useTransformedImagesUrlFilters } from "@/app/hooks/use-transformed-imag
 import useUser from "@/app/hooks/use-user";
 import TransformedImageCard from "@/app/images/components/transformed-image-card";
 import TransformedImagesToolbar from "@/app/images/components/transformed-images-toolbar";
-import { formatBytes } from "@/app/utils/format";
+import { formatBytes, formatNumber } from "@/app/utils/format";
 import { downloadImage } from "@/app/utils/image-utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,8 +43,11 @@ const Page = () => {
   const params = useParams<{ transformedImageId: string }>();
   const router = useRouter();
   const transformedImageId = params.transformedImageId;
-  const { transformedImageQuery, likeUnlikeTransformedImageMutation } =
-    useTransformedImage(transformedImageId);
+  const {
+    transformedImageQuery,
+    likeUnlikeTransformedImageMutation,
+    downloadTransformedImageMutation,
+  } = useTransformedImage(transformedImageId);
   const { imagesQuery } = useImages();
   const { user } = useUser();
   const [isTransformDialogOpen, setIsTransformDialogOpen] = useState(false);
@@ -58,6 +61,7 @@ const Page = () => {
     transformedImage?.transformedTransformedImages || [];
 
   const transformedCount = transformedTransformedImages.length;
+  const likesCount = transformedImage?.likes?.length || 0;
 
   // Check if current user has liked this transformed image
   const isLiked =
@@ -181,6 +185,10 @@ const Page = () => {
     if (!transformedImage) return;
 
     try {
+      await downloadTransformedImageMutation.mutateAsync({
+        id: transformedImage.id,
+      });
+
       await downloadImage(
         transformedImage.secureUrl,
         `transformed-image-${transformedImage.id}`
@@ -302,14 +310,10 @@ const Page = () => {
           </div>
           <div className="py-12 text-center">
             <h1 className="text-2xl font-bold mb-2">
-              {transformedImageQuery.data?.parentId
-                ? "Transformed Transformed Image Not Found"
-                : "Transformed Image Not Found"}
+              Transformed Image Not Found
             </h1>
             <p className="text-muted-foreground">
-              {transformedImageQuery.data?.parentId
-                ? "The transformed transformed image you're looking for doesn't exist."
-                : "The transformed image you're looking for doesn't exist."}
+              The transformed image you're looking for doesn't exist.
             </p>
           </div>
         </div>
@@ -368,6 +372,38 @@ const Page = () => {
                   {transformedCount} image{transformedCount !== 1 ? "s" : ""}
                 </span>
               </div>
+              {(likesCount > 0 || transformedImage.downloadsCount > 0) && (
+                <div className="flex flex-wrap gap-4 text-sm">
+                  <span>
+                    <span className="inline-flex items-center gap-1.5">
+                      {likesCount > 0 && (
+                        <>
+                          <Heart className="inline size-3" />
+                          <span>
+                            {formatNumber(likesCount)}{" "}
+                            {likesCount === 1 ? "like" : "likes"}
+                          </span>
+                        </>
+                      )}
+                      {likesCount > 0 &&
+                        transformedImage.downloadsCount > 0 && (
+                          <span className="mx-1">•</span>
+                        )}
+                      {transformedImage.downloadsCount > 0 && (
+                        <>
+                          <Download className="inline size-3" />
+                          <span>
+                            {formatNumber(transformedImage.downloadsCount)}{" "}
+                            {transformedImage.downloadsCount === 1
+                              ? "download"
+                              : "downloads"}
+                          </span>
+                        </>
+                      )}
+                    </span>
+                  </span>
+                </div>
+              )}
               <div className="flex flex-wrap gap-4 text-sm">
                 <span>
                   <span className="font-medium">Transformed on:</span>{" "}
