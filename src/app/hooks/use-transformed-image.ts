@@ -42,7 +42,7 @@ const useTransformedImage = (id: string) => {
   >({
     queryKey: ["public-transformed-images", id],
     queryFn: async () => await fetchPublicTransformedImage(id),
-    enabled: !!id,
+    enabled: !!accessToken && !!id,
   });
 
   useEffect(() => {
