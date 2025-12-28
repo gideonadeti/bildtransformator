@@ -1,6 +1,7 @@
 "use client";
 
 import { Image as ImageIcon } from "lucide-react";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -201,12 +202,17 @@ const Page = () => {
                     {filteredAndSortedImages.length !== 1 ? "s" : ""} found
                   </p>
                 </div>
-                <Button
-                  variant="outline"
-                  onClick={() => setIsUploadImageDialogOpen(true)}
-                >
-                  Upload Image
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" asChild>
+                    <Link href="/public-images">Public Images</Link>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsUploadImageDialogOpen(true)}
+                  >
+                    Upload Image
+                  </Button>
+                </div>
               </div>
 
               <ImagesToolbar
