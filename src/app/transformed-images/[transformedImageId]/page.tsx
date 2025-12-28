@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { ArrowLeft, Code2, Download, Trash2, Wand2 } from "lucide-react";
+import { ArrowLeft, Code2, Download, Heart, Trash2, Wand2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -18,6 +18,7 @@ import {
   useTransformedImagesFilter,
 } from "@/app/hooks/use-transformed-images-filter";
 import { useTransformedImagesUrlFilters } from "@/app/hooks/use-transformed-images-url-filters";
+import useUser from "@/app/hooks/use-user";
 import TransformedImageCard from "@/app/images/components/transformed-image-card";
 import TransformedImagesToolbar from "@/app/images/components/transformed-images-toolbar";
 import { formatBytes } from "@/app/utils/format";
@@ -42,8 +43,10 @@ const Page = () => {
   const params = useParams<{ transformedImageId: string }>();
   const router = useRouter();
   const transformedImageId = params.transformedImageId;
-  const { transformedImageQuery } = useTransformedImage(transformedImageId);
+  const { transformedImageQuery, likeUnlikeTransformedImageMutation } =
+    useTransformedImage(transformedImageId);
   const { imagesQuery } = useImages();
+  const { user } = useUser();
   const [isTransformDialogOpen, setIsTransformDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
@@ -55,6 +58,12 @@ const Page = () => {
     transformedImage?.transformedTransformedImages || [];
 
   const transformedCount = transformedTransformedImages.length;
+
+  // Check if current user has liked this transformed image
+  const isLiked =
+    user && transformedImage
+      ? transformedImage.likes?.some((like) => like.userId === user.id) ?? false
+      : false;
 
   // Get original image name from images query
   const originalImageName = useMemo(() => {
@@ -160,6 +169,12 @@ const Page = () => {
 
   const handleTransform = () => {
     setIsTransformDialogOpen(true);
+  };
+
+  const handleLikeUnlike = () => {
+    if (!transformedImage) return;
+
+    likeUnlikeTransformedImageMutation.mutate({ id: transformedImage.id });
   };
 
   const handleDownload = async () => {
@@ -395,6 +410,18 @@ const Page = () => {
             <Download />
             Download
           </Button>
+
+          <Button
+            variant={isLiked ? "default" : "outline"}
+            onClick={handleLikeUnlike}
+          >
+            <Heart
+              className={isLiked ? "fill-current" : ""}
+              size={16}
+              strokeWidth={2}
+            />
+            {isLiked ? "Unlike" : "Like"}
+          </Button>
           <Button
             variant="destructive"
             onClick={() => setIsDeleteDialogOpen(true)}
@@ -442,7 +469,8 @@ const Page = () => {
             {displayedTransformedTransformedImages.length === 0 ? (
               <div className="py-12 text-center">
                 <p className="text-muted-foreground text-lg">
-                  No transformed transformed images found. Try adjusting your filters.
+                  No transformed transformed images found. Try adjusting your
+                  filters.
                 </p>
               </div>
             ) : (
