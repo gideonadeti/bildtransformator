@@ -37,6 +37,7 @@ const useImages = () => {
   const publicImagesQuery = useQuery<Image[], AxiosError<{ message: string }>>({
     queryKey: ["public-images"],
     queryFn: async () => await fetchPublicImages(),
+    enabled: !!accessToken,
   });
 
   useEffect(() => {
