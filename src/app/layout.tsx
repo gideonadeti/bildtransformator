@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
@@ -48,6 +49,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             </ThemeProvider>
           </AuthProvider>
         </QcProvider>
+        <Analytics />
       </body>
     </html>
   );
