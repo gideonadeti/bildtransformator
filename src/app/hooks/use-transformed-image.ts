@@ -387,7 +387,6 @@ const useTransformedImage = (id: string) => {
         );
       } else {
         // Also update the images query cache if this is a direct transformed image
-
         context.client.setQueryData<Image[]>(["images"], (oldData) => {
           if (!oldData) return oldData;
 
