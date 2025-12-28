@@ -60,14 +60,23 @@ const useTransformedImage = (id: string) => {
 
   useEffect(() => {
     if (publicTransformedImageQuery.isError) {
-      const message =
-        publicTransformedImageQuery.error?.response?.data?.message ||
-        "Failed to fetch public transformed image";
+      const errorMessage =
+        publicTransformedImageQuery.error?.response?.data?.message || "";
+      const isNotFoundError =
+        publicTransformedImageQuery.error?.response?.status === 400 ||
+        errorMessage.toLowerCase().includes("not found");
 
-      toast.error(message, { id: "fetch-public-transformed-image-error" });
+      // Silently fail for "not found" errors (expected when image is private)
+      if (!isNotFoundError) {
+        const message =
+          errorMessage || "Failed to fetch public transformed image";
+
+        toast.error(message, { id: "fetch-public-transformed-image-error" });
+      }
     }
   }, [
     publicTransformedImageQuery.error?.response?.data,
+    publicTransformedImageQuery.error?.response?.status,
     publicTransformedImageQuery.isError,
   ]);
 
