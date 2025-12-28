@@ -52,6 +52,9 @@ const DeleteImageDialog = ({
     onOpenChange(false);
   };
 
+  const isNestedTransformedImage =
+    isTransformedImage && image && "parentId" in image && image.parentId;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <CustomDialogContent>
@@ -65,12 +68,22 @@ const DeleteImageDialog = ({
           </DialogTitle>
           <DialogDescription>
             Are you sure you want to delete{" "}
-            {isTransformedImage
-              ? image.parentId
-                ? "this transformed transformed image"
-                : "this transformed image"
-              : image?.originalName}
-            ? This action cannot be undone.
+            <strong>
+              {isTransformedImage
+                ? image.parentId
+                  ? "this transformed transformed image"
+                  : "this transformed image"
+                : image?.originalName}
+            </strong>
+            ?
+            {!isNestedTransformedImage && (
+              <>
+                {" "}
+                All transformed images and nested transformed images, if any,
+                will also be deleted.
+              </>
+            )}{" "}
+            This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <CustomDialogFooter
