@@ -63,7 +63,7 @@ const useTransformedImage = (id: string) => {
       const errorMessage =
         publicTransformedImageQuery.error?.response?.data?.message || "";
       const isNotFoundError =
-        publicTransformedImageQuery.error?.response?.status === 400 ||
+        publicTransformedImageQuery.error?.response?.status === 404 ||
         errorMessage.toLowerCase().includes("not found");
 
       // Silently fail for "not found" errors (expected when image is private)
