@@ -183,3 +183,18 @@ export const togglePublicImage = async (id: string) => {
     throw error;
   }
 };
+
+// Toggle the public status of a transformed image
+export const togglePublicTransformedImage = async (id: string) => {
+  try {
+    const response = await axios.patch(
+      `/transformed-images/${id}/toggle-public`
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Error from `togglePublicTransformedImage`:", error);
+
+    throw error;
+  }
+};
