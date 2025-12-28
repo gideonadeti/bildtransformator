@@ -2,6 +2,7 @@ import { format } from "date-fns";
 import { Download, Eye, Globe, Heart, Lock, Trash2, Wand2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -36,12 +37,18 @@ const ImageCard = ({
   onDeleteClick = () => {},
 }: ImageCardProps) => {
   const { user } = useUser();
+  const pathname = usePathname();
   const isOwner = user?.id === image.userId;
   const {
     likeUnlikeImageMutation,
     downloadImageMutation,
     togglePublicImageMutation,
   } = useImages();
+
+  // Determine the base route based on current pathname
+  const baseRoute = pathname?.startsWith("/public-images")
+    ? "public-images"
+    : "images";
 
   const handleDownload = async () => {
     try {
@@ -148,11 +155,7 @@ const ImageCard = ({
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="outline" size="icon" asChild>
-                <Link
-                  href={`/${image.isPublic ? "public-images" : "images"}/${
-                    image.id
-                  }`}
-                >
+                <Link href={`/${baseRoute}/${image.id}`}>
                   <Eye />
                   <span className="sr-only">View</span>
                 </Link>
