@@ -1,7 +1,16 @@
 "use client";
 
 import { format } from "date-fns";
-import { ArrowLeft, Code2, Download, Heart, Trash2, Wand2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Code2,
+  Download,
+  Globe,
+  Heart,
+  Lock,
+  Trash2,
+  Wand2,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -47,6 +56,7 @@ const Page = () => {
     transformedImageQuery,
     likeUnlikeTransformedImageMutation,
     downloadTransformedImageMutation,
+    togglePublicTransformedImageMutation,
   } = useTransformedImage(transformedImageId);
   const { imagesQuery } = useImages();
   const { user } = useUser();
@@ -68,6 +78,12 @@ const Page = () => {
     user && transformedImage
       ? transformedImage.likes?.some((like) => like.userId === user.id) ?? false
       : false;
+
+  // Check if current user owns this transformed image (via original image)
+  const originalImage = images.find(
+    (img) => img.id === transformedImage?.originalImageId
+  );
+  const isOwner = user?.id === originalImage?.userId;
 
   // Get original image name from images query
   const originalImageName = useMemo(() => {
@@ -179,6 +195,12 @@ const Page = () => {
     if (!transformedImage) return;
 
     likeUnlikeTransformedImageMutation.mutate({ id: transformedImage.id });
+  };
+
+  const handleTogglePublic = () => {
+    if (!transformedImage) return;
+
+    togglePublicTransformedImageMutation.mutate({ id: transformedImage.id });
   };
 
   const handleDownload = async () => {
@@ -458,6 +480,19 @@ const Page = () => {
             />
             {isLiked ? "Unlike" : "Like"}
           </Button>
+          {isOwner && (
+            <Button
+              variant={transformedImage.isPublic ? "default" : "outline"}
+              onClick={handleTogglePublic}
+            >
+              {transformedImage.isPublic ? (
+                <Globe size={16} />
+              ) : (
+                <Lock size={16} />
+              )}
+              {transformedImage.isPublic ? "Make Private" : "Make Public"}
+            </Button>
+          )}
           <Button
             variant="destructive"
             onClick={() => setIsDeleteDialogOpen(true)}

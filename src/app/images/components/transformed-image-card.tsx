@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { Code2, Download, Eye, Heart, Trash2, Wand2 } from "lucide-react";
+import { Code2, Download, Eye, Globe, Heart, Lock, Trash2, Wand2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -19,6 +19,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import useImages from "../../hooks/use-images";
 import useTransformedImage from "../../hooks/use-transformed-image";
 import useUser from "../../hooks/use-user";
 import type { TransformedImage } from "../../types/general";
@@ -37,10 +38,18 @@ const TransformedImageCard = ({
   const [isTransformDialogOpen, setIsTransformDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { user } = useUser();
+  const { imagesQuery } = useImages();
   const {
     likeUnlikeTransformedImageMutation,
     downloadTransformedImageMutation,
+    togglePublicTransformedImageMutation,
   } = useTransformedImage(transformedImage.id);
+
+  const images = imagesQuery.data || [];
+  const originalImage = images.find(
+    (img) => img.id === transformedImage.originalImageId
+  );
+  const isOwner = user?.id === originalImage?.userId;
 
   const likesCount = transformedImage.likes?.length || 0;
   const isLiked = user
@@ -49,6 +58,10 @@ const TransformedImageCard = ({
 
   const handleLikeUnlike = () => {
     likeUnlikeTransformedImageMutation.mutate({ id: transformedImage.id });
+  };
+
+  const handleTogglePublic = () => {
+    togglePublicTransformedImageMutation.mutate({ id: transformedImage.id });
   };
 
   const handleDownload = async () => {
@@ -226,6 +239,35 @@ const TransformedImageCard = ({
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>{isLiked ? "Unlike" : "Like"}</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+              {isOwner && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant={transformedImage.isPublic ? "default" : "outline"}
+                      size="icon"
+                      onClick={handleTogglePublic}
+                    >
+                      {transformedImage.isPublic ? (
+                        <Globe size={16} />
+                      ) : (
+                        <Lock size={16} />
+                      )}
+                      <span className="sr-only">
+                        {transformedImage.isPublic
+                          ? "Make private"
+                          : "Make public"}
+                      </span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>
+                      {transformedImage.isPublic
+                        ? "Make private"
+                        : "Make public"}
+                    </p>
                   </TooltipContent>
                 </Tooltip>
               )}
