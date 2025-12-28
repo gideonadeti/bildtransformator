@@ -264,6 +264,7 @@ const useTransformedImage = (id: string) => {
     { id: string },
     {
       previousTransformedImage: TransformedImage | undefined;
+      previousPublicTransformedImage: TransformedImage | undefined;
     }
   >({
     mutationFn: async ({ id }) => {
@@ -273,15 +274,23 @@ const useTransformedImage = (id: string) => {
       await context.client.cancelQueries({
         queryKey: ["transformed-images", id],
       });
+      await context.client.cancelQueries({
+        queryKey: ["public-transformed-images", id],
+      });
 
       const previousTransformedImage =
         context.client.getQueryData<TransformedImage>([
           "transformed-images",
           id,
         ]);
+      const previousPublicTransformedImage =
+        context.client.getQueryData<TransformedImage>([
+          "public-transformed-images",
+          id,
+        ]);
 
       if (!user || !previousTransformedImage) {
-        return { previousTransformedImage };
+        return { previousTransformedImage, previousPublicTransformedImage };
       }
 
       const existingLike = previousTransformedImage.likes.find(
@@ -315,6 +324,41 @@ const useTransformedImage = (id: string) => {
         updatedTransformedImage
       );
 
+      // Also update public-transformed-images query if it exists
+      if (previousPublicTransformedImage) {
+        const existingPublicLike = previousPublicTransformedImage.likes.find(
+          (like) => like.userId === user.id
+        );
+
+        const updatedPublicTransformedImage: TransformedImage =
+          existingPublicLike
+            ? {
+                ...previousPublicTransformedImage,
+                likes: previousPublicTransformedImage.likes.filter(
+                  (like) => like.id !== existingPublicLike.id
+                ),
+              }
+            : {
+                ...previousPublicTransformedImage,
+                likes: [
+                  ...previousPublicTransformedImage.likes,
+                  {
+                    id: `temp-${Date.now()}`,
+                    userId: user.id,
+                    imageId: null,
+                    transformedImageId: id,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                  },
+                ],
+              };
+
+        context.client.setQueryData<TransformedImage>(
+          ["public-transformed-images", id],
+          updatedPublicTransformedImage
+        );
+      }
+
       if (previousTransformedImage.parentId) {
         // Also update parent transformed image if this is a nested transformed image
 
@@ -351,7 +395,7 @@ const useTransformedImage = (id: string) => {
         });
       }
 
-      return { previousTransformedImage };
+      return { previousTransformedImage, previousPublicTransformedImage };
     },
     onError: (error, _variables, onMutateResult, _context) => {
       const message =
@@ -367,10 +411,21 @@ const useTransformedImage = (id: string) => {
           onMutateResult.previousTransformedImage
         );
       }
+
+      // Restore previous public transformed image data if available
+      if (onMutateResult?.previousPublicTransformedImage) {
+        queryClient.setQueryData<TransformedImage>(
+          ["public-transformed-images", id],
+          onMutateResult.previousPublicTransformedImage
+        );
+      }
     },
     onSettled: (_data, _error, _variables, _onMutateResult, context) => {
       context.client.invalidateQueries({
         queryKey: ["transformed-images", id],
+      });
+      context.client.invalidateQueries({
+        queryKey: ["public-transformed-images", id],
       });
     },
   });
@@ -381,6 +436,7 @@ const useTransformedImage = (id: string) => {
     { id: string },
     {
       previousTransformedImage: TransformedImage | undefined;
+      previousPublicTransformedImage: TransformedImage | undefined;
     }
   >({
     mutationFn: async ({ id }) => {
@@ -390,6 +446,9 @@ const useTransformedImage = (id: string) => {
       await context.client.cancelQueries({
         queryKey: ["transformed-images", id],
       });
+      await context.client.cancelQueries({
+        queryKey: ["public-transformed-images", id],
+      });
       await context.client.cancelQueries({ queryKey: ["images"] });
 
       const previousTransformedImage =
@@ -397,9 +456,14 @@ const useTransformedImage = (id: string) => {
           "transformed-images",
           id,
         ]);
+      const previousPublicTransformedImage =
+        context.client.getQueryData<TransformedImage>([
+          "public-transformed-images",
+          id,
+        ]);
 
       if (!previousTransformedImage) {
-        return { previousTransformedImage };
+        return { previousTransformedImage, previousPublicTransformedImage };
       }
 
       // Optimistically increment downloadsCount
@@ -412,6 +476,19 @@ const useTransformedImage = (id: string) => {
         ["transformed-images", id],
         updatedTransformedImage
       );
+
+      // Also update public-transformed-images query if it exists
+      if (previousPublicTransformedImage) {
+        const updatedPublicTransformedImage: TransformedImage = {
+          ...previousPublicTransformedImage,
+          downloadsCount: previousPublicTransformedImage.downloadsCount + 1,
+        };
+
+        context.client.setQueryData<TransformedImage>(
+          ["public-transformed-images", id],
+          updatedPublicTransformedImage
+        );
+      }
 
       if (previousTransformedImage.parentId) {
         // Also update parent transformed image if this is a nested transformed image
@@ -447,7 +524,7 @@ const useTransformedImage = (id: string) => {
         });
       }
 
-      return { previousTransformedImage };
+      return { previousTransformedImage, previousPublicTransformedImage };
     },
     onError: (error, _variables, onMutateResult, _context) => {
       const message =
@@ -462,10 +539,21 @@ const useTransformedImage = (id: string) => {
           onMutateResult.previousTransformedImage
         );
       }
+
+      // Restore previous public transformed image data if available
+      if (onMutateResult?.previousPublicTransformedImage) {
+        queryClient.setQueryData<TransformedImage>(
+          ["public-transformed-images", id],
+          onMutateResult.previousPublicTransformedImage
+        );
+      }
     },
     onSettled: (_data, _error, { id }, _onMutateResult, context) => {
       context.client.invalidateQueries({
         queryKey: ["transformed-images", id],
+      });
+      context.client.invalidateQueries({
+        queryKey: ["public-transformed-images", id],
       });
       context.client.invalidateQueries({ queryKey: ["images"] });
     },
@@ -477,6 +565,7 @@ const useTransformedImage = (id: string) => {
     { id: string },
     {
       previousTransformedImage: TransformedImage | undefined;
+      previousPublicTransformedImage: TransformedImage | undefined;
     }
   >({
     mutationFn: async ({ id }) => {
@@ -486,6 +575,9 @@ const useTransformedImage = (id: string) => {
       await context.client.cancelQueries({
         queryKey: ["transformed-images", id],
       });
+      await context.client.cancelQueries({
+        queryKey: ["public-transformed-images", id],
+      });
       await context.client.cancelQueries({ queryKey: ["images"] });
 
       const previousTransformedImage =
@@ -493,9 +585,14 @@ const useTransformedImage = (id: string) => {
           "transformed-images",
           id,
         ]);
+      const previousPublicTransformedImage =
+        context.client.getQueryData<TransformedImage>([
+          "public-transformed-images",
+          id,
+        ]);
 
       if (!previousTransformedImage) {
-        return { previousTransformedImage };
+        return { previousTransformedImage, previousPublicTransformedImage };
       }
 
       // Optimistically toggle isPublic
@@ -507,6 +604,28 @@ const useTransformedImage = (id: string) => {
       context.client.setQueryData<TransformedImage>(
         ["transformed-images", id],
         updatedTransformedImage
+      );
+
+      // Update public-transformed-images query cache
+      const willBePublic = !previousTransformedImage.isPublic;
+      context.client.setQueryData<TransformedImage>(
+        ["public-transformed-images", id],
+        (oldData) => {
+          if (!oldData) {
+            // If cache is empty and making public, add the transformed image
+            return willBePublic && previousTransformedImage
+              ? { ...previousTransformedImage, isPublic: true }
+              : undefined;
+          }
+
+          if (willBePublic) {
+            // Making public: update existing entry or add new one
+            return { ...oldData, isPublic: true };
+          } else {
+            // Making private: remove from cache
+            return undefined;
+          }
+        }
       );
 
       if (previousTransformedImage.parentId) {
@@ -543,7 +662,7 @@ const useTransformedImage = (id: string) => {
         });
       }
 
-      return { previousTransformedImage };
+      return { previousTransformedImage, previousPublicTransformedImage };
     },
     onError: (error, _variables, onMutateResult, _context) => {
       const message =
@@ -559,10 +678,21 @@ const useTransformedImage = (id: string) => {
           onMutateResult.previousTransformedImage
         );
       }
+
+      // Restore previous public transformed image data if available
+      if (onMutateResult?.previousPublicTransformedImage) {
+        queryClient.setQueryData<TransformedImage>(
+          ["public-transformed-images", id],
+          onMutateResult.previousPublicTransformedImage
+        );
+      }
     },
     onSettled: (_data, _error, { id }, _onMutateResult, context) => {
       context.client.invalidateQueries({
         queryKey: ["transformed-images", id],
+      });
+      context.client.invalidateQueries({
+        queryKey: ["public-transformed-images", id],
       });
       context.client.invalidateQueries({ queryKey: ["images"] });
     },
