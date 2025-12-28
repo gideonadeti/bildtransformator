@@ -402,17 +402,28 @@ const useImages = () => {
     boolean,
     AxiosError<{ message: string }>,
     { id: string },
-    { previousImages: Image[] | undefined }
+    {
+      previousImages: Image[] | undefined;
+      previousPublicImages: Image[] | undefined;
+    }
   >({
     mutationFn: async ({ id }) => {
       return togglePublicImage(id);
     },
     onMutate: async ({ id }, context) => {
       await context.client.cancelQueries({ queryKey: ["images"] });
+      await context.client.cancelQueries({ queryKey: ["public-images"] });
 
       const previousImages = context.client.getQueryData<Image[]>(["images"]);
+      const previousPublicImages = context.client.getQueryData<Image[]>([
+        "public-images",
+      ]);
 
-      // Optimistically toggle isPublic
+      // Find the image to determine its current public status
+      const targetImage = previousImages?.find((image) => image.id === id);
+      const willBePublic = targetImage ? !targetImage.isPublic : false;
+
+      // Update images query cache
       context.client.setQueryData<Image[]>(["images"], (oldImages) => {
         if (!oldImages) return oldImages;
 
@@ -425,7 +436,39 @@ const useImages = () => {
         });
       });
 
-      return { previousImages };
+      // Update public-images query cache
+      context.client.setQueryData<Image[]>(
+        ["public-images"],
+        (oldPublicImages) => {
+          if (!oldPublicImages) {
+            // If cache is empty and making public, add the image
+            return willBePublic && targetImage
+              ? [{ ...targetImage, isPublic: true }]
+              : [];
+          }
+
+          if (willBePublic && targetImage) {
+            // Making public: add or update in public-images cache
+            const exists = oldPublicImages.some((img) => img.id === id);
+            if (exists) {
+              // Update existing entry
+              return oldPublicImages.map((image) => {
+                if (image.id === id) {
+                  return { ...image, isPublic: true };
+                }
+                return image;
+              });
+            }
+            // Add new entry
+            return [{ ...targetImage, isPublic: true }, ...oldPublicImages];
+          } else {
+            // Making private: remove from public-images cache
+            return oldPublicImages.filter((image) => image.id !== id);
+          }
+        }
+      );
+
+      return { previousImages, previousPublicImages };
     },
     onError: (error, _variables, onMutateResult, _context) => {
       const message =
@@ -440,9 +483,18 @@ const useImages = () => {
           onMutateResult.previousImages
         );
       }
+
+      // Restore previous public images data if available
+      if (onMutateResult?.previousPublicImages) {
+        queryClient.setQueryData<Image[]>(
+          ["public-images"],
+          onMutateResult.previousPublicImages
+        );
+      }
     },
     onSettled: (_data, _error, _variables, _onMutateResult, context) => {
       context.client.invalidateQueries({ queryKey: ["images"] });
+      context.client.invalidateQueries({ queryKey: ["public-images"] });
     },
   });
 
