@@ -158,6 +158,19 @@ export const downloadImage = async (id: string) => {
   }
 };
 
+// Increment the downloads count of a transformed image
+export const downloadTransformedImage = async (id: string) => {
+  try {
+    const response = await axios.post(`/transformed-images/${id}/download`);
+
+    return response.data;
+  } catch (error) {
+    console.error("Error from `downloadTransformedImage`:", error);
+
+    throw error;
+  }
+};
+
 // Toggle the public status of an image
 export const togglePublicImage = async (id: string) => {
   try {

@@ -12,6 +12,7 @@ import type {
 } from "../types/general";
 import {
   deleteTransformedImage,
+  downloadTransformedImage,
   fetchTransformedImage,
   likeUnlikeTransformedImage,
   transformTransformedImage,
@@ -350,11 +351,108 @@ const useTransformedImage = (id: string) => {
     },
   });
 
+  const downloadTransformedImageMutation = useMutation<
+    boolean,
+    AxiosError<{ message: string }>,
+    { id: string },
+    {
+      previousTransformedImage: TransformedImage | undefined;
+    }
+  >({
+    mutationFn: async ({ id }) => {
+      return downloadTransformedImage(id);
+    },
+    onMutate: async ({ id }, context) => {
+      await context.client.cancelQueries({
+        queryKey: ["transformed-images", id],
+      });
+      await context.client.cancelQueries({ queryKey: ["images"] });
+
+      const previousTransformedImage =
+        context.client.getQueryData<TransformedImage>([
+          "transformed-images",
+          id,
+        ]);
+
+      if (!previousTransformedImage) {
+        return { previousTransformedImage };
+      }
+
+      // Optimistically increment downloadsCount
+      const updatedTransformedImage: TransformedImage = {
+        ...previousTransformedImage,
+        downloadsCount: previousTransformedImage.downloadsCount + 1,
+      };
+
+      context.client.setQueryData<TransformedImage>(
+        ["transformed-images", id],
+        updatedTransformedImage
+      );
+
+      if (previousTransformedImage.parentId) {
+        // Also update parent transformed image if this is a nested transformed image
+        context.client.setQueryData<TransformedImage>(
+          ["transformed-images", previousTransformedImage.parentId],
+          (oldData) => {
+            if (!oldData) return oldData;
+
+            return {
+              ...oldData,
+              transformedTransformedImages:
+                oldData.transformedTransformedImages.map((ti) =>
+                  ti.id === id ? updatedTransformedImage : ti
+                ),
+            };
+          }
+        );
+      } else {
+        // Also update the images query cache if this is a direct transformed image
+        context.client.setQueryData<Image[]>(["images"], (oldData) => {
+          if (!oldData) return oldData;
+
+          return oldData.map((image) =>
+            image.id === previousTransformedImage.originalImageId
+              ? {
+                  ...image,
+                  transformedImages: image.transformedImages.map((ti) =>
+                    ti.id === id ? updatedTransformedImage : ti
+                  ),
+                }
+              : image
+          );
+        });
+      }
+
+      return { previousTransformedImage };
+    },
+    onError: (error, _variables, onMutateResult, _context) => {
+      const message =
+        error.response?.data?.message || "Failed to download transformed image";
+
+      toast.error(message, { id: "download-transformed-image-error" });
+
+      // Restore previous transformed image data if available
+      if (onMutateResult?.previousTransformedImage) {
+        queryClient.setQueryData<TransformedImage>(
+          ["transformed-images", id],
+          onMutateResult.previousTransformedImage
+        );
+      }
+    },
+    onSettled: (_data, _error, { id }, _onMutateResult, context) => {
+      context.client.invalidateQueries({
+        queryKey: ["transformed-images", id],
+      });
+      context.client.invalidateQueries({ queryKey: ["images"] });
+    },
+  });
+
   return {
     transformedImageQuery,
     transformTransformedImageMutation,
     deleteTransformedImageMutation,
     likeUnlikeTransformedImageMutation,
+    downloadTransformedImageMutation,
   };
 };
 
