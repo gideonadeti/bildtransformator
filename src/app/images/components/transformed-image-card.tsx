@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { Code2, Download, Eye, Trash2, Wand2 } from "lucide-react";
+import { Code2, Download, Eye, Heart, Trash2, Wand2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -19,6 +19,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import useTransformedImage from "../../hooks/use-transformed-image";
+import useUser from "../../hooks/use-user";
 import type { TransformedImage } from "../../types/general";
 import { formatBytes } from "../../utils/format";
 import { downloadImage } from "../../utils/image-utils";
@@ -34,6 +36,19 @@ const TransformedImageCard = ({
 }: TransformedImageCardProps) => {
   const [isTransformDialogOpen, setIsTransformDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const { user } = useUser();
+  const { likeUnlikeTransformedImageMutation } = useTransformedImage(
+    transformedImage.id
+  );
+
+  const likesCount = transformedImage.likes?.length || 0;
+  const isLiked = user
+    ? transformedImage.likes?.some((like) => like.userId === user.id) ?? false
+    : false;
+
+  const handleLikeUnlike = () => {
+    likeUnlikeTransformedImageMutation.mutate({ id: transformedImage.id });
+  };
 
   const handleDownload = async () => {
     try {
@@ -86,6 +101,11 @@ const TransformedImageCard = ({
               <span className="font-medium">Created:</span>{" "}
               {format(new Date(transformedImage.createdAt), "PPp")}
             </div>
+            {likesCount > 0 && (
+              <div>
+                <span className="font-medium">Likes:</span> {likesCount}
+              </div>
+            )}
           </div>
           <div className="flex justify-between gap-2">
             {/* Actions on bottom left */}
@@ -157,6 +177,29 @@ const TransformedImageCard = ({
                   </p>
                 </TooltipContent>
               </Tooltip>
+              {user && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant={isLiked ? "default" : "outline"}
+                      size="icon"
+                      onClick={handleLikeUnlike}
+                    >
+                      <Heart
+                        className={isLiked ? "fill-current" : ""}
+                        size={16}
+                        strokeWidth={2}
+                      />
+                      <span className="sr-only">
+                        {isLiked ? "Unlike" : "Like"}
+                      </span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{isLiked ? "Unlike" : "Like"}</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
