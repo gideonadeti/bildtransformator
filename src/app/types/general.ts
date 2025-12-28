@@ -36,6 +36,7 @@ export interface TransformedImage {
   updatedAt: string;
 
   transformation: TransformImageFormValues;
+  originalImage: Image;
   transformedTransformedImages: TransformedImage[];
   likes: Like[];
 }
