@@ -13,12 +13,15 @@ import type {
 import {
   deleteTransformedImage,
   fetchTransformedImage,
+  likeUnlikeTransformedImage,
   transformTransformedImage,
 } from "../utils/general-query-functions";
 import useAccessToken from "./use-access-token";
+import useUser from "./use-user";
 
 const useTransformedImage = (id: string) => {
   const { accessToken } = useAccessToken();
+  const { user } = useUser();
   const router = useRouter();
   const queryClient = useQueryClient();
   const transformedImageQuery = useQuery<
@@ -230,10 +233,128 @@ const useTransformedImage = (id: string) => {
     },
   });
 
+  const likeUnlikeTransformedImageMutation = useMutation<
+    boolean,
+    AxiosError<{ message: string }>,
+    { id: string },
+    {
+      previousTransformedImage: TransformedImage | undefined;
+    }
+  >({
+    mutationFn: async ({ id }) => {
+      return likeUnlikeTransformedImage(id);
+    },
+    onMutate: async ({ id }, context) => {
+      await context.client.cancelQueries({
+        queryKey: ["transformed-images", id],
+      });
+
+      const previousTransformedImage =
+        context.client.getQueryData<TransformedImage>([
+          "transformed-images",
+          id,
+        ]);
+
+      if (!user || !previousTransformedImage) {
+        return { previousTransformedImage };
+      }
+
+      const existingLike = previousTransformedImage.likes.find(
+        (like) => like.userId === user.id
+      );
+
+      const updatedTransformedImage: TransformedImage = existingLike
+        ? {
+            ...previousTransformedImage,
+            likes: previousTransformedImage.likes.filter(
+              (like) => like.id !== existingLike.id
+            ),
+          }
+        : {
+            ...previousTransformedImage,
+            likes: [
+              ...previousTransformedImage.likes,
+              {
+                id: `temp-${Date.now()}`,
+                userId: user.id,
+                imageId: null,
+                transformedImageId: id,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              },
+            ],
+          };
+
+      context.client.setQueryData<TransformedImage>(
+        ["transformed-images", id],
+        updatedTransformedImage
+      );
+
+      if (previousTransformedImage.parentId) {
+        // Also update parent transformed image if this is a nested transformed image
+
+        context.client.setQueryData<TransformedImage>(
+          ["transformed-images", previousTransformedImage.parentId],
+          (oldData) => {
+            if (!oldData) return oldData;
+
+            return {
+              ...oldData,
+              transformedTransformedImages:
+                oldData.transformedTransformedImages.map((ti) =>
+                  ti.id === id ? updatedTransformedImage : ti
+                ),
+            };
+          }
+        );
+      } else {
+        // Also update the images query cache if this is a direct transformed image
+
+        context.client.setQueryData<Image[]>(["images"], (oldData) => {
+          if (!oldData) return oldData;
+
+          return oldData.map((image) =>
+            image.id === previousTransformedImage.originalImageId
+              ? {
+                  ...image,
+                  transformedImages: image.transformedImages.map((ti) =>
+                    ti.id === id ? updatedTransformedImage : ti
+                  ),
+                }
+              : image
+          );
+        });
+      }
+
+      return { previousTransformedImage };
+    },
+    onError: (error, _variables, onMutateResult, _context) => {
+      const message =
+        error.response?.data?.message ||
+        "Failed to like or unlike transformed image";
+
+      toast.error(message, { id: "like-unlike-transformed-image-error" });
+
+      // Restore previous transformed image data if available
+      if (onMutateResult?.previousTransformedImage) {
+        queryClient.setQueryData<TransformedImage>(
+          ["transformed-images", id],
+          onMutateResult.previousTransformedImage
+        );
+      }
+    },
+    onSettled: (_data, _error, _variables, _onMutateResult, context) => {
+      context.client.invalidateQueries({
+        queryKey: ["transformed-images", id],
+      });
+    },
+  });
+
   return {
     transformedImageQuery,
     transformTransformedImageMutation,
     deleteTransformedImageMutation,
+    likeUnlikeTransformedImageMutation,
   };
 };
 

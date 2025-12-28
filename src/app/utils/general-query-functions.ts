@@ -133,6 +133,18 @@ export const likeUnlikeImage = async (id: string) => {
   }
 };
 
+export const likeUnlikeTransformedImage = async (id: string) => {
+  try {
+    const response = await axios.post(`/transformed-images/${id}/like-unlike`);
+
+    return response.data;
+  } catch (error) {
+    console.error("Error from `likeUnlikeTransformedImage`:", error);
+
+    throw error;
+  }
+};
+
 // Increment the downloads count of an image
 export const downloadImage = async (id: string) => {
   try {
