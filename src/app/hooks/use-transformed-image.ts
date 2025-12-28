@@ -13,6 +13,7 @@ import type {
 import {
   deleteTransformedImage,
   downloadTransformedImage,
+  fetchPublicTransformedImage,
   fetchTransformedImage,
   likeUnlikeTransformedImage,
   togglePublicTransformedImage,
@@ -35,6 +36,15 @@ const useTransformedImage = (id: string) => {
     enabled: !!accessToken && !!id,
   });
 
+  const publicTransformedImageQuery = useQuery<
+    TransformedImage,
+    AxiosError<{ message: string }>
+  >({
+    queryKey: ["public-transformed-images", id],
+    queryFn: async () => await fetchPublicTransformedImage(id),
+    enabled: !!id,
+  });
+
   useEffect(() => {
     if (transformedImageQuery.isError) {
       const message =
@@ -46,6 +56,19 @@ const useTransformedImage = (id: string) => {
   }, [
     transformedImageQuery.error?.response?.data,
     transformedImageQuery.isError,
+  ]);
+
+  useEffect(() => {
+    if (publicTransformedImageQuery.isError) {
+      const message =
+        publicTransformedImageQuery.error?.response?.data?.message ||
+        "Failed to fetch public transformed image";
+
+      toast.error(message, { id: "fetch-public-transformed-image-error" });
+    }
+  }, [
+    publicTransformedImageQuery.error?.response?.data,
+    publicTransformedImageQuery.isError,
   ]);
 
   useEffect(() => {
@@ -547,6 +570,7 @@ const useTransformedImage = (id: string) => {
 
   return {
     transformedImageQuery,
+    publicTransformedImageQuery,
     transformTransformedImageMutation,
     deleteTransformedImageMutation,
     likeUnlikeTransformedImageMutation,

@@ -64,6 +64,18 @@ export const fetchTransformedImage = async (id: string) => {
   }
 };
 
+export const fetchPublicTransformedImage = async (id: string) => {
+  try {
+    const response = await axios.get(`/transformed-images/${id}/public`);
+
+    return response.data;
+  } catch (error) {
+    console.error("Error from `fetchPublicTransformedImage`:", error);
+
+    throw error;
+  }
+};
+
 export const transformImage = async (
   id: string,
   formValues: TransformImageFormValues
