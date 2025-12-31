@@ -9,12 +9,9 @@ import { toast } from "sonner";
 import useImages from "@/app/hooks/use-images";
 import { uploadImageFormSchema } from "@/app/libs/form-schemas/general-form-schemas";
 import type { UploadImageFormValues } from "@/app/types/general";
+import { formatBytes } from "@/app/utils/format";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -109,6 +106,16 @@ const UploadImageDialog = ({ open, onOpenChange }: UploadImageDialogProps) => {
     form.reset();
   };
 
+  const imageFile = form.watch("image");
+
+  const getFileExtension = (fileName: string): string => {
+    const parts = fileName.split(".");
+    if (parts.length > 1) {
+      return parts[parts.length - 1].toUpperCase();
+    }
+    return "UNKNOWN";
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <CustomDialogContent>
@@ -153,24 +160,59 @@ const UploadImageDialog = ({ open, onOpenChange }: UploadImageDialogProps) => {
                     )}
                   </FormControl>
                   {imageUrl && (
-                    <div className="mt-4 relative aspect-video rounded-lg overflow-hidden border border-border">
-                      <Image
-                        src={imageUrl}
-                        alt="Uploaded Image"
-                        fill
-                        className="object-contain"
-                        unoptimized
-                      />
-                      <Button
-                        variant="destructive"
-                        size="icon-sm"
-                        className="absolute top-2 right-2 rounded-full"
-                        onClick={() => handleRemoveImage()}
-                        disabled={uploadImageMutation.isPending}
-                      >
-                        <X />
-                      </Button>
-                    </div>
+                    <>
+                      <div className="mt-4 relative aspect-video rounded-lg overflow-hidden border border-border">
+                        <Image
+                          src={imageUrl}
+                          alt="Uploaded Image"
+                          fill
+                          className="object-contain"
+                          unoptimized
+                        />
+                        <Button
+                          variant="destructive"
+                          size="icon-sm"
+                          className="absolute top-2 right-2 rounded-full"
+                          onClick={() => handleRemoveImage()}
+                          disabled={uploadImageMutation.isPending}
+                        >
+                          <X />
+                        </Button>
+                      </div>
+                      {imageFile && (
+                        <div className="mt-3 p-3 rounded-lg bg-muted/50 border border-border">
+                          <div className="space-y-1.5 text-sm">
+                            <div className="flex items-center justify-between">
+                              <span className="text-muted-foreground">
+                                Name:
+                              </span>
+                              <span
+                                className="font-medium truncate ml-2 max-w-[200px]"
+                                title={imageFile.name}
+                              >
+                                {imageFile.name}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-muted-foreground">
+                                Size:
+                              </span>
+                              <span className="font-medium">
+                                {formatBytes(imageFile.size)}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-muted-foreground">
+                                Type:
+                              </span>
+                              <span className="font-medium">
+                                {getFileExtension(imageFile.name)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                   <FormMessage />
                 </FormItem>
