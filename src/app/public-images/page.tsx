@@ -15,7 +15,6 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
-import DeleteImageDialog from "../components/dialogs/delete-image-dialog";
 import TransformImageDialog from "../components/dialogs/transform-image-dialog";
 import useImages from "../hooks/use-images";
 import {
@@ -36,8 +35,6 @@ const Page = () => {
   const images = publicImagesQuery.data || [];
   const [selectedImage, setSelectedImage] = useState<ImageType | null>(null);
   const [isTransformDialogOpen, setIsTransformDialogOpen] = useState(false);
-  const [imageToDelete, setImageToDelete] = useState<ImageType | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const { filters, nameInput, setNameInput, replaceFiltersInUrl } =
     useImagesUrlFilters();
@@ -123,11 +120,6 @@ const Page = () => {
   const handleClearFilters = () => {
     replaceFiltersInUrl(defaultImagesFilters);
     reset();
-  };
-
-  const handleDeleteClick = (image: ImageType) => {
-    setImageToDelete(image);
-    setIsDeleteDialogOpen(true);
   };
 
   if (publicImagesQuery.isPending) {
@@ -267,7 +259,6 @@ const Page = () => {
                       setSelectedImage(image);
                       setIsTransformDialogOpen(true);
                     }}
-                    onDeleteClick={() => handleDeleteClick(image)}
                   />
                 ))}
               </div>
@@ -296,16 +287,6 @@ const Page = () => {
           }
         }}
         image={selectedImage}
-      />
-      <DeleteImageDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={(open) => {
-          setIsDeleteDialogOpen(open);
-          if (!open) {
-            setImageToDelete(null);
-          }
-        }}
-        image={imageToDelete}
       />
     </>
   );
