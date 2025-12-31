@@ -241,9 +241,14 @@ const Page = () => {
                 </EmptyDescription>
               </EmptyHeader>
               <EmptyContent>
-                <Button onClick={() => setIsUploadImageDialogOpen(true)}>
-                  Upload Image
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" asChild>
+                    <Link href="/public-images">Public Images</Link>
+                  </Button>
+                  <Button onClick={() => setIsUploadImageDialogOpen(true)}>
+                    Upload Image
+                  </Button>
+                </div>
               </EmptyContent>
             </Empty>
           ) : displayedImages.length === 0 ? (
@@ -258,9 +263,14 @@ const Page = () => {
                 </EmptyDescription>
               </EmptyHeader>
               <EmptyContent>
-                <Button onClick={() => setIsUploadImageDialogOpen(true)}>
-                  Upload Image
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" asChild>
+                    <Link href="/public-images">Public Images</Link>
+                  </Button>
+                  <Button onClick={() => setIsUploadImageDialogOpen(true)}>
+                    Upload Image
+                  </Button>
+                </div>
               </EmptyContent>
             </Empty>
           ) : (
