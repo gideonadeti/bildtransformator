@@ -1,12 +1,14 @@
 "use client";
 
-import { Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
   Empty,
+  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
@@ -29,6 +31,7 @@ import type { Image as ImageType } from "../types/general";
 const IMAGES_PER_BATCH = 9;
 
 const Page = () => {
+  const router = useRouter();
   const { publicImagesQuery } = useImages();
   const images = publicImagesQuery.data || [];
   const [selectedImage, setSelectedImage] = useState<ImageType | null>(null);
@@ -229,6 +232,17 @@ const Page = () => {
                   There are no public images available at the moment.
                 </EmptyDescription>
               </EmptyHeader>
+              <EmptyContent>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" onClick={() => router.back()}>
+                    <ArrowLeft />
+                    Go back
+                  </Button>
+                  <Button variant="outline" asChild>
+                    <Link href="/images">Go to Images</Link>
+                  </Button>
+                </div>
+              </EmptyContent>
             </Empty>
           ) : displayedImages.length === 0 ? (
             <Empty>
