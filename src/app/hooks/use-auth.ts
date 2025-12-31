@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -9,9 +9,11 @@ import type {
   SignInFormValues,
   SignUpFormValues,
   SignUpInResponse,
+  UserStats,
 } from "../types/auth";
 import {
   deleteAccount,
+  fetchStats,
   forgotPassword,
   resetPassword,
   signIn,
@@ -26,6 +28,13 @@ const useAuth = () => {
   const router = useRouter();
   const { setAccessToken, clearAccessToken } = useAccessToken();
   const { setUser, clearUser } = useUser();
+  const { accessToken } = useAccessToken();
+
+  const statsQuery = useQuery<UserStats, AxiosError<{ message: string }>>({
+    queryKey: ["stats"],
+    queryFn: async () => await fetchStats(),
+    enabled: !!accessToken,
+  });
 
   const signUpMutation = useMutation<
     SignUpInResponse,
@@ -176,6 +185,7 @@ const useAuth = () => {
     deleteAccountMutation,
     forgotPasswordMutation,
     resetPasswordMutation,
+    statsQuery,
   };
 };
 

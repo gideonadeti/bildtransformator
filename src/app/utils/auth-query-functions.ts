@@ -93,3 +93,14 @@ export const resetPassword = async (
     throw error;
   }
 };
+
+export const fetchStats = async () => {
+  try {
+    const response = await axios.get("/auth/stats");
+
+    return response.data;
+  } catch (error) {
+    console.error("Error from `fetchStats`:", error);
+    throw error;
+  }
+};
