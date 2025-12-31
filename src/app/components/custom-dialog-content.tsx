@@ -1,15 +1,12 @@
 "use client";
 
-import {
-  DialogContent as BaseDialogContent,
-  type DialogContentProps,
-} from "@/components/ui/dialog";
+import { DialogContent as BaseDialogContent } from "@/components/ui/dialog";
 
 const CustomDialogContent = ({
   className,
   children,
   ...props
-}: DialogContentProps) => {
+}: React.ComponentProps<typeof BaseDialogContent>) => {
   return (
     <BaseDialogContent
       className={className}
@@ -24,4 +21,3 @@ const CustomDialogContent = ({
 };
 
 export default CustomDialogContent;
-
