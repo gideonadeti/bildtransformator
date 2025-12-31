@@ -3,7 +3,7 @@ import { useMemo } from "react";
 
 import type { Image } from "../types/general";
 
-export type ImagesSortField = "name" | "size" | "date";
+export type ImagesSortField = "name" | "size" | "date" | "downloads" | "likes";
 export type ImagesSortOrder = "asc" | "desc";
 
 export interface ImagesFilterState {
@@ -135,6 +135,12 @@ const sortImages = (
         comparison = compareAsc(dateA, dateB);
         break;
       }
+      case "downloads":
+        comparison = a.downloadsCount - b.downloadsCount;
+        break;
+      case "likes":
+        comparison = (a.likes?.length ?? 0) - (b.likes?.length ?? 0);
+        break;
     }
 
     return sortOrder === "asc" ? comparison : -comparison;

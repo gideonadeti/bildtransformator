@@ -65,7 +65,7 @@ A modern, responsive web application for uploading, transforming, and sharing im
 
 - **Image Gallery** - View all uploaded images with metadata
 - **Filtering** - Filter images by name, size, and format
-- **Sorting** - Sort images by upload date, name, and size
+- **Sorting** - Sort images by upload date, name, size, download count, and likes count
 - **Load-More Pagination** - Efficient pagination for large image collections
 - **Image Details** - View detailed information about each image
 - **Download Tracking** - Track download counts for images

@@ -189,6 +189,18 @@ const ImagesToolbar = ({
               <SelectItem value="size-desc">
                 File size — largest first
               </SelectItem>
+              <SelectItem value="downloads-desc">
+                Downloads — most first
+              </SelectItem>
+              <SelectItem value="downloads-asc">
+                Downloads — least first
+              </SelectItem>
+              <SelectItem value="likes-desc">
+                Likes — most first
+              </SelectItem>
+              <SelectItem value="likes-asc">
+                Likes — least first
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
