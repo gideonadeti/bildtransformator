@@ -11,12 +11,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import TransformImageDialog from "@/app/components/dialogs/transform-image-dialog";
 import UploadImageDialog from "@/app/components/dialogs/upload-image-dialog";
 import useAuth from "@/app/hooks/use-auth";
 import useImages from "@/app/hooks/use-images";
 import ImageCard from "@/app/images/components/image-card";
-import type { Image } from "@/app/types/general";
 import { formatBytes, formatNumber } from "@/app/utils/format";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,8 +30,6 @@ const Dashboard = () => {
   const { statsQuery } = useAuth();
   const { imagesQuery, publicImagesQuery } = useImages();
   const [isUploadImageDialogOpen, setIsUploadImageDialogOpen] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<Image | null>(null);
-  const [isTransformDialogOpen, setIsTransformDialogOpen] = useState(false);
 
   const stats = statsQuery.data;
   const images = imagesQuery.data || [];
@@ -250,14 +246,7 @@ const Dashboard = () => {
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {recentImages.map((image) => (
-              <ImageCard
-                key={image.id}
-                image={image}
-                onTransformClick={() => {
-                  setSelectedImage(image);
-                  setIsTransformDialogOpen(true);
-                }}
-              />
+              <ImageCard key={image.id} image={image} />
             ))}
           </div>
         )}
@@ -297,14 +286,7 @@ const Dashboard = () => {
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {recentPublicImages.map((image) => (
-              <ImageCard
-                key={image.id}
-                image={image}
-                onTransformClick={() => {
-                  setSelectedImage(image);
-                  setIsTransformDialogOpen(true);
-                }}
-              />
+              <ImageCard key={image.id} image={image} />
             ))}
           </div>
         )}
@@ -314,18 +296,6 @@ const Dashboard = () => {
         open={isUploadImageDialogOpen}
         onOpenChange={setIsUploadImageDialogOpen}
       />
-      {selectedImage && (
-        <TransformImageDialog
-          open={isTransformDialogOpen}
-          image={selectedImage}
-          onOpenChange={(open) => {
-            setIsTransformDialogOpen(open);
-            if (!open) {
-              setSelectedImage(null);
-            }
-          }}
-        />
-      )}
     </div>
   );
 };

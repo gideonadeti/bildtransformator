@@ -3,7 +3,7 @@
 import { ArrowLeft, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -15,7 +15,6 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
-import TransformImageDialog from "../components/dialogs/transform-image-dialog";
 import useImages from "../hooks/use-images";
 import {
   defaultImagesFilters,
@@ -25,7 +24,6 @@ import { useImagesUrlFilters } from "../hooks/use-images-url-filters";
 import { usePagination } from "../hooks/use-pagination";
 import ImageCard from "../images/components/image-card";
 import ImagesToolbar from "../images/components/images-toolbar";
-import type { Image as ImageType } from "../types/general";
 
 const IMAGES_PER_BATCH = 9;
 
@@ -33,8 +31,6 @@ const Page = () => {
   const router = useRouter();
   const { publicImagesQuery } = useImages();
   const images = publicImagesQuery.data || [];
-  const [selectedImage, setSelectedImage] = useState<ImageType | null>(null);
-  const [isTransformDialogOpen, setIsTransformDialogOpen] = useState(false);
 
   const { filters, nameInput, setNameInput, replaceFiltersInUrl } =
     useImagesUrlFilters();
@@ -252,14 +248,7 @@ const Page = () => {
             <>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {displayedImages.map((image) => (
-                  <ImageCard
-                    key={image.id}
-                    image={image}
-                    onTransformClick={() => {
-                      setSelectedImage(image);
-                      setIsTransformDialogOpen(true);
-                    }}
-                  />
+                  <ImageCard key={image.id} image={image} />
                 ))}
               </div>
 
@@ -278,16 +267,6 @@ const Page = () => {
           )}
         </div>
       </div>
-      <TransformImageDialog
-        open={isTransformDialogOpen}
-        onOpenChange={(open) => {
-          setIsTransformDialogOpen(open);
-          if (!open) {
-            setSelectedImage(null);
-          }
-        }}
-        image={selectedImage}
-      />
     </>
   );
 };

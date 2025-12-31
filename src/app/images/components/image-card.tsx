@@ -21,6 +21,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import DeleteImageDialog from "../../components/dialogs/delete-image-dialog";
+import TransformImageDialog from "../../components/dialogs/transform-image-dialog";
 import useImages from "../../hooks/use-images";
 import useUser from "../../hooks/use-user";
 import type { Image as ImageType } from "../../types/general";
@@ -29,14 +30,14 @@ import { downloadImage } from "../../utils/image-utils";
 
 interface ImageCardProps {
   image: ImageType;
-  onTransformClick: () => void;
 }
 
-const ImageCard = ({ image, onTransformClick }: ImageCardProps) => {
+const ImageCard = ({ image }: ImageCardProps) => {
   const { user } = useUser();
   const pathname = usePathname();
   const isOwner = user?.id === image.userId;
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isTransformDialogOpen, setIsTransformDialogOpen] = useState(false);
   const {
     likeUnlikeImageMutation,
     downloadImageMutation,
@@ -170,7 +171,7 @@ const ImageCard = ({ image, onTransformClick }: ImageCardProps) => {
                   <Button
                     variant="default"
                     size="icon"
-                    onClick={onTransformClick}
+                    onClick={() => setIsTransformDialogOpen(true)}
                   >
                     <Wand2 />
                     <span className="sr-only">Transform</span>
@@ -258,6 +259,16 @@ const ImageCard = ({ image, onTransformClick }: ImageCardProps) => {
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
         image={image}
+      />
+      <TransformImageDialog
+        open={isTransformDialogOpen}
+        onOpenChange={setIsTransformDialogOpen}
+        image={{
+          id: image.id,
+          secureUrl: image.secureUrl,
+          originalName: image.originalName,
+          parentId: null,
+        }}
       />
     </>
   );

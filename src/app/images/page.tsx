@@ -14,7 +14,6 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
-import TransformImageDialog from "../components/dialogs/transform-image-dialog";
 import UploadImageDialog from "../components/dialogs/upload-image-dialog";
 import useImages from "../hooks/use-images";
 import {
@@ -23,7 +22,6 @@ import {
 } from "../hooks/use-images-filter";
 import { useImagesUrlFilters } from "../hooks/use-images-url-filters";
 import { usePagination } from "../hooks/use-pagination";
-import type { Image as ImageType } from "../types/general";
 import ImageCard from "./components/image-card";
 import ImagesToolbar from "./components/images-toolbar";
 
@@ -33,8 +31,6 @@ const Page = () => {
   const { imagesQuery } = useImages();
   const images = imagesQuery.data || [];
   const [isUploadImageDialogOpen, setIsUploadImageDialogOpen] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<ImageType | null>(null);
-  const [isTransformDialogOpen, setIsTransformDialogOpen] = useState(false);
 
   const { filters, nameInput, setNameInput, replaceFiltersInUrl } =
     useImagesUrlFilters();
@@ -269,14 +265,7 @@ const Page = () => {
             <>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {displayedImages.map((image) => (
-                  <ImageCard
-                    key={image.id}
-                    image={image}
-                    onTransformClick={() => {
-                      setSelectedImage(image);
-                      setIsTransformDialogOpen(true);
-                    }}
-                  />
+                  <ImageCard key={image.id} image={image} />
                 ))}
               </div>
 
@@ -298,16 +287,6 @@ const Page = () => {
       <UploadImageDialog
         open={isUploadImageDialogOpen}
         onOpenChange={setIsUploadImageDialogOpen}
-      />
-      <TransformImageDialog
-        open={isTransformDialogOpen}
-        onOpenChange={(open) => {
-          setIsTransformDialogOpen(open);
-          if (!open) {
-            setSelectedImage(null);
-          }
-        }}
-        image={selectedImage}
       />
     </>
   );
