@@ -2,7 +2,7 @@
 
 import { Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -27,7 +27,63 @@ import ImagesToolbar from "./components/images-toolbar";
 
 const IMAGES_PER_BATCH = 9;
 
-const Page = () => {
+const LoadingSkeleton = () => {
+  return (
+    <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
+      <div className="space-y-6">
+        {/* Header skeleton */}
+        <div className="space-y-2">
+          <Skeleton className="h-9 w-40" />
+          <Skeleton className="h-5 w-56" />
+        </div>
+
+        {/* Filters skeleton: name, size, sort */}
+        <div className="space-y-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
+            {/* Name filter skeleton */}
+            <div className="w-full lg:flex-1 lg:min-w-0 space-y-1">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-9 w-full" />
+            </div>
+
+            {/* Size filter skeleton */}
+            <div className="w-full lg:w-auto space-y-1">
+              <Skeleton className="h-4 w-20" />
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Skeleton className="h-9 w-[160px]" />
+                <Skeleton className="h-9 w-[160px]" />
+              </div>
+            </div>
+
+            {/* Format filter skeleton */}
+            <div className="w-full sm:w-[180px] space-y-1">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-9 w-full" />
+            </div>
+
+            {/* Sort skeleton */}
+            <div className="w-full sm:w-[260px] space-y-1">
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-9 w-full" />
+            </div>
+          </div>
+        </div>
+
+        {/* Grid skeleton */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Skeleton className="h-[280px] w-full" />
+          <Skeleton className="h-[280px] w-full" />
+          <Skeleton className="h-[280px] w-full" />
+          <Skeleton className="h-[280px] w-full" />
+          <Skeleton className="h-[280px] w-full" />
+          <Skeleton className="h-[280px] w-full" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ImagesContent = () => {
   const { imagesQuery } = useImages();
   const images = imagesQuery.data || [];
   const [isUploadImageDialogOpen, setIsUploadImageDialogOpen] = useState(false);
@@ -119,59 +175,7 @@ const Page = () => {
   };
 
   if (imagesQuery.isPending) {
-    return (
-      <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        <div className="space-y-6">
-          {/* Header skeleton */}
-          <div className="space-y-2">
-            <Skeleton className="h-9 w-40" />
-            <Skeleton className="h-5 w-56" />
-          </div>
-
-          {/* Filters skeleton: name, size, sort */}
-          <div className="space-y-4">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
-              {/* Name filter skeleton */}
-              <div className="w-full lg:flex-1 lg:min-w-0 space-y-1">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-9 w-full" />
-              </div>
-
-              {/* Size filter skeleton */}
-              <div className="w-full lg:w-auto space-y-1">
-                <Skeleton className="h-4 w-20" />
-                <div className="flex flex-col gap-2 sm:flex-row">
-                  <Skeleton className="h-9 w-[160px]" />
-                  <Skeleton className="h-9 w-[160px]" />
-                </div>
-              </div>
-
-              {/* Format filter skeleton */}
-              <div className="w-full sm:w-[180px] space-y-1">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-9 w-full" />
-              </div>
-
-              {/* Sort skeleton */}
-              <div className="w-full sm:w-[260px] space-y-1">
-                <Skeleton className="h-4 w-16" />
-                <Skeleton className="h-9 w-full" />
-              </div>
-            </div>
-          </div>
-
-          {/* Grid skeleton */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <Skeleton className="h-[280px] w-full" />
-            <Skeleton className="h-[280px] w-full" />
-            <Skeleton className="h-[280px] w-full" />
-            <Skeleton className="h-[280px] w-full" />
-            <Skeleton className="h-[280px] w-full" />
-            <Skeleton className="h-[280px] w-full" />
-          </div>
-        </div>
-      </div>
-    );
+    return <LoadingSkeleton />;
   }
 
   const hasNoImages = images.length === 0;
@@ -289,6 +293,14 @@ const Page = () => {
         onOpenChange={setIsUploadImageDialogOpen}
       />
     </>
+  );
+};
+
+const Page = () => {
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <ImagesContent />
+    </Suspense>
   );
 };
 
