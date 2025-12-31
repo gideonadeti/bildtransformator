@@ -246,7 +246,7 @@ const Dashboard = () => {
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {recentImages.map((image) => (
-              <ImageCard key={image.id} image={image} />
+              <ImageCard key={image.id} image={image} baseRoute="images" />
             ))}
           </div>
         )}
@@ -286,7 +286,11 @@ const Dashboard = () => {
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {recentPublicImages.map((image) => (
-              <ImageCard key={image.id} image={image} />
+              <ImageCard
+                key={image.id}
+                image={image}
+                baseRoute="public-images"
+              />
             ))}
           </div>
         )}

@@ -30,9 +30,10 @@ import { downloadImage } from "../../utils/image-utils";
 
 interface ImageCardProps {
   image: ImageType;
+  baseRoute?: "images" | "public-images";
 }
 
-const ImageCard = ({ image }: ImageCardProps) => {
+const ImageCard = ({ image, baseRoute: baseRouteProp }: ImageCardProps) => {
   const { user } = useUser();
   const pathname = usePathname();
   const isOwner = user?.id === image.userId;
@@ -44,8 +45,10 @@ const ImageCard = ({ image }: ImageCardProps) => {
     togglePublicImageMutation,
   } = useImages();
 
-  // Determine the base route based on current pathname
-  const baseRoute = pathname?.startsWith("/public-images")
+  // Determine the base route based on prop or current pathname
+  const baseRoute = baseRouteProp
+    ? baseRouteProp
+    : pathname?.startsWith("/public-images")
     ? "public-images"
     : "images";
 
