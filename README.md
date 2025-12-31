@@ -15,6 +15,9 @@ A modern, responsive web application for uploading, transforming, and sharing im
     - [User Experience](#user-experience)
     - [Additional Features](#additional-features)
   - [Screenshots](#screenshots)
+    - [Desktop (MacBook Air)](#desktop-macbook-air)
+    - [Tablet (iPad Pro 11")](#tablet-ipad-pro-11)
+    - [Mobile (iPhone 13 Pro)](#mobile-iphone-13-pro)
   - [Technologies Used](#technologies-used)
     - [Core Framework](#core-framework)
     - [State Management \& Data Fetching](#state-management--data-fetching)
@@ -97,7 +100,20 @@ A modern, responsive web application for uploading, transforming, and sharing im
 
 ## Screenshots
 
-For screenshots, please visit the [Bildtransformator repository](https://github.com/gideonadeti/bildtransformator/?tab=readme-ov-file#screenshots).
+### Desktop (MacBook Air)
+
+![Image details page showing three transformed images of an uploaded image](src/public/images/screenshots/Macbook-Air-bildtransformator.vercel.app%20(3).png)
+![Public images page showing a grid of public images sorted by most downloaded first](src/public/images/screenshots/Macbook-Air-bildtransformator.vercel.app%20(4).png)
+
+### Tablet (iPad Pro 11")
+
+![Features section of landing page showing features of the application](src/public/images/screenshots/805shots_so.png)
+![Visible part of the dashboard showing statistics, quick actions, and recent images](src/public/images/screenshots/941shots_so.png)
+
+### Mobile (iPhone 13 Pro)
+
+![Image details page showing an image and its properties as well as action buttons](src/public/images/screenshots/491shots_so.png)
+![Sign up (left) and sign in (right) pages](src/public/images/screenshots/991shots_so.png)
 
 ## Technologies Used
 
