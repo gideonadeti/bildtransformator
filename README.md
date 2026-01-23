@@ -2,6 +2,8 @@
 
 A modern, responsive web application for uploading, transforming, and sharing images. Built with Next.js and featuring a beautiful UI with dark mode support, real-time transformation notifications, and social media functionality. This frontend client communicates with the [image-processing-service](https://github.com/gideonadeti/image-processing-service) backend API to provide a complete image processing experience that combines cloud storage capabilities (like Google Photos), image transformation features (like Cloudinary), and social media functionality (like Instagram).
 
+[Live Demo](https://bildtransformator.vercel.app) | [Video Walkthrough](https://youtu.be/zbXT1eRk1l4)
+
 ## Table of Contents
 
 - [Bildtransformator](#bildtransformator)
