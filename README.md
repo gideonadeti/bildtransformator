@@ -170,16 +170,15 @@ A modern, responsive web application for uploading, transforming, and sharing im
 ### Prerequisites
 
 - Node.js (v22 or higher)
-- Bun package manager (recommended) - alternatives like npm, yarn, or pnpm also work
+ager (recommended; alternatives like npm or yarn also work)
 - Backend API running (see [image-processing-service](../image-processing-service/README.md))
 
 ### Environment Variables
 
-Create a `.env.local` file in the root directory with the following variables:
+Copy `.env.local.example` to `.env.local` and update the values if needed:
 
-```env
-# Backend API
-NEXT_PUBLIC_BACKEND_BASE_URL="http://localhost:3000/api/v1"
+```bash
+cp .env.local.example .env.local
 ```
 
 ### Installation Steps
@@ -194,13 +193,13 @@ NEXT_PUBLIC_BACKEND_BASE_URL="http://localhost:3000/api/v1"
 2. **Install dependencies**
 
    ```bash
-   bun install
+   pnpm install
    ```
 
 3. **Start the development server**
 
    ```bash
-   bun run dev
+   pnpm dev -- -p 3001
    ```
 
 4. **Open your browser**
@@ -219,7 +218,7 @@ NEXT_PUBLIC_BACKEND_BASE_URL="http://localhost:3000/api/v1"
    - Import your repository
 
 3. **Configure environment variables**
-   - Add `NEXT_PUBLIC_BACKEND_BASE_URL` environment variable in Vercel dashboard
+   - Add `NEXT_PUBLIC_BACKEND_BASE_URL` environment variable in Vercel dashboard (set it to your API base URL; the app appends `/api/v1`)
    - Ensure backend URL points to your production API
 
 4. **Deploy**
